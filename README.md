@@ -100,7 +100,7 @@ The basics of `@okikio/sharedworker` rather closely match `SharedWorker`'s the m
 
 In addition, the `terminate()` method was added to `@okikio/sharedworker` this allows both the `close()` method (this is from `SharedWorker.prototype.port` methods being available directly on `SharedWorker.prototype`) and the `terminate()` method to manually close workers. 
 
-Check out the [API site](https://okikio.github.io/sharedworker/api) for detailed API documentation.
+Check out the [API site](https://sharedworker.okikio.dev) for detailed API documentation.
 
 ## Browser Support
 
