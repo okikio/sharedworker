@@ -42,7 +42,9 @@
     "semantic-release": "semantic-release"
   },
   "release": {
-    "branches": ["main"]
+    "branches": [
+      "main"
+    ]
   },
   "changelog": {
     "repo": "sharedworker",
@@ -103,12 +105,12 @@
     "rehype-urls": "^1.1.1",
     "rollup": "^2.58.0",
     "rollup-plugin-bundle-size": "^1.0.3",
-    "rollup-plugin-esbuild": "^4.5.0",
+    "rollup-plugin-esbuild": "^4.6.0",
     "rollup-plugin-terser": "^7.0.2",
+    "semantic-release": "^18.0.0",
     "serve": "^12.0.1",
     "typedoc": "^0.22.5",
     "typescript": "^4.4.4",
-    "unified": "^10.1.0",
-    "semantic-release": "^18.0.0"
+    "unified": "^10.1.0"
   }
 }
