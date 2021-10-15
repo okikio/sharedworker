@@ -15,22 +15,22 @@ const __dirname = path.dirname(__filename);
 import pkg from './package.json';
 
 export default {
-    input: pkg.main,
+    input: "src/index.ts",
     output: [
         {
-            file: path.join(__dirname, pkg.publishConfig.module),
+            file: path.join(__dirname, pkg.module),
             exports: "named",
             format: "es"
         },
         {
-            file: path.join(__dirname, pkg.publishConfig.main),
+            file: path.join(__dirname, pkg.main),
             exports: "named",
             format: "cjs"
         },
         {
-            file: path.join(__dirname, pkg.publishConfig.legacy),
+            file: path.join(__dirname, pkg.legacy),
             exports: "named",
-            name: pkg.publishConfig.umd,
+            name: pkg.umd,
             format: "umd",
         },
     ],

@@ -4,23 +4,20 @@
   "type": "module",
   "sideEffects": false,
   "description": "A small mostly spec. compliant polyfill/ponyfill for SharedWorkers, it acts as a drop in replacement for normal Workers, and supports an API surface that matches normal Workers.",
-  "main": "src/index.ts",
-  "publishConfig": {
-    "umd": "sharedworker",
-    "access": "public",
-    "legacy": "lib/index.js",
-    "main": "lib/index.cjs",
-    "types": "@types/index.d.ts",
-    "browser": "lib/index.mjs",
-    "module": "lib/index.mjs",
-    "exports": {
-      ".": {
-        "require": "./lib/index.cjs",
-        "import": "./lib/index.mjs",
-        "default": "./lib/index.mjs"
-      },
-      "./lib/*": "./lib/*"
-    }
+  "umd": "sharedworker",
+  "access": "public",
+  "legacy": "lib/index.js",
+  "main": "lib/index.cjs",
+  "types": "@types/index.d.ts",
+  "browser": "lib/index.mjs",
+  "module": "lib/index.mjs",
+  "exports": {
+    ".": {
+      "require": "./lib/index.cjs",
+      "import": "./lib/index.mjs",
+      "default": "./lib/index.mjs"
+    },
+    "./lib/*": "./lib/*"
   },
   "directories": {
     "lib": "./lib",
