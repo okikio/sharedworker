@@ -1,0 +1,114 @@
+{
+  "name": "@okikio/sharedworker",
+  "version": "0.0.0-development",
+  "type": "module",
+  "sideEffects": false,
+  "description": "A small mostly spec. compliant polyfill/ponyfill for SharedWorkers, it acts as a drop in replacement for normal Workers, and supports an API surface that matches normal Workers.",
+  "main": "src/index.ts",
+  "publishConfig": {
+    "umd": "sharedworker",
+    "access": "public",
+    "legacy": "lib/index.js",
+    "main": "lib/index.cjs",
+    "types": "@types/index.d.ts",
+    "browser": "lib/index.mjs",
+    "module": "lib/index.mjs",
+    "exports": {
+      ".": {
+        "require": "./lib/index.cjs",
+        "import": "./lib/index.mjs",
+        "default": "./lib/index.mjs"
+      },
+      "./lib/*": "./lib/*"
+    }
+  },
+  "directories": {
+    "lib": "./lib",
+    "src": "./src",
+    "@types": "./@types"
+  },
+  "files": [
+    "lib",
+    "src",
+    "@types"
+  ],
+  "scripts": {
+    "typedoc": "rm -r -f docs/ && typedoc && node ./rehype.js && cp -a static/. docs/",
+    "dts": "rm -r -f @types/ && tsc -p dts.tsconfig.json",
+    "preview": "serve docs",
+    "commit": "git cz",
+    "build": "rm -r -f lib/ && rollup -c",
+    "pre-release": "pnpm build && pnpm typedoc && pnpm dts",
+    "semantic-release": "semantic-release"
+  },
+  "release": {
+    "branches": ["main"]
+  },
+  "changelog": {
+    "repo": "sharedworker",
+    "labels": {
+      "breaking": ":boom: Breaking Change",
+      "enhancement": ":rocket: Enhancement",
+      "bug": ":bug: Bug Fix",
+      "documentation": ":memo: Documentation",
+      "internal": ":house: Internal"
+    },
+    "cacheDir": ".changelog"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS --verbose"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/okikio/sharedworker.git"
+  },
+  "keywords": [
+    "sharedworker",
+    "typescript",
+    "worker",
+    "web",
+    "polyfill",
+    "ponyfill",
+    "es2021"
+  ],
+  "author": {
+    "name": "Okiki Ojo",
+    "email": "hey@okikio.dev",
+    "url": "https://blog.okikio.dev"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/okikio/sharedworker/issues"
+  },
+  "homepage": "https://github.com/okikio/sharedworker#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^13.2.1",
+    "@commitlint/config-conventional": "^13.2.0",
+    "@playwright/test": "^1.15.2",
+    "@rollup/plugin-commonjs": "^21.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.5",
+    "@types/web": "^0.0.41",
+    "esbuild": "^0.13.6",
+    "fast-glob": "^3.2.7",
+    "husky": "^7.0.2",
+    "playwright": "^1.15.2",
+    "pnpm": "^6.17.1",
+    "rehype-external-links": "^1.0.0",
+    "rehype-highlight": "^5.0.0",
+    "rehype-parse": "^8.0.3",
+    "rehype-slug": "^5.0.0",
+    "rehype-stringify": "^9.0.2",
+    "rehype-urls": "^1.1.1",
+    "rollup": "^2.58.0",
+    "rollup-plugin-bundle-size": "^1.0.3",
+    "rollup-plugin-esbuild": "^4.5.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "serve": "^12.0.1",
+    "typedoc": "^0.22.5",
+    "typescript": "^4.4.4",
+    "unified": "^10.1.0",
+    "semantic-release": "^18.0.0"
+  }
+}
