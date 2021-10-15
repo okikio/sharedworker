@@ -1,4 +1,4 @@
-name: Publish
+name: Generate Github Release Changelog
 
 on:
   push:
