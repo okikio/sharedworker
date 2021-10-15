@@ -81,7 +81,7 @@
   "bugs": {
     "url": "https://github.com/okikio/sharedworker/issues"
   },
-  "homepage": "https://github.com/okikio/sharedworker#readme",
+  "homepage": "https://sharedworker.okikio.dev",
   "devDependencies": {
     "@commitlint/cli": "^13.2.1",
     "@commitlint/config-conventional": "^13.2.0",
