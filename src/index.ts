@@ -108,10 +108,8 @@ export class SharedWorkerPolyfill implements SharedWorker, EventTarget, Abstract
     /**
      * Is an EventListener that is called whenever an ErrorEvent of type error event occurs.
      */
-    public get onerror() {
-        return this.ActualWorker.onerror;
-    }
-
+    public get onerror()
+        { return this.ActualWorker.onerror; }
     public set onerror(value: (this: AbstractWorker, ev: ErrorEvent) => any) {
         this.ActualWorker.onerror = value;
     }
