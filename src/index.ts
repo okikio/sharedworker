@@ -152,8 +152,4 @@ export class SharedWorkerPolyfill implements SharedWorker, EventTarget, Abstract
     }
 }
 
-new SharedWorkerPolyfill("").addEventListener("message", () => {
-    console.log("message");
-});
-
 export default SharedWorkerPolyfill;
