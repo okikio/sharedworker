@@ -6,7 +6,7 @@ export declare const SharedWorkerSupported: boolean;
 /**
  * A polyfill class for `SharedWorker`, it accepts a URL/string as well as any other options the spec. allows for `SharedWorker`. It supports all the same methods and properties as the original, except it adds compatibility methods and properties for older browsers that don't support `SharedWorker`, so, it can switch to normal `Workers` instead.
  */
-export declare class SharedWorkerPolyfill implements SharedWorker {
+export declare class SharedWorkerPolyfill implements SharedWorker, EventTarget, AbstractWorker {
     /**
      * The actual worker that is used, depending on browser support it can be either a `SharedWorker` or a normal `Worker`.
      */
@@ -29,7 +29,7 @@ export declare class SharedWorkerPolyfill implements SharedWorker {
     /**
      * Clones message and transmits it to worker's global environment. transfer can be passed as a list of objects that are to be transferred rather than cloned.
      */
-    postMessage(message: any, transfer?: Transferable[]): void;
+    postMessage(message: any, transfer?: Transferable[] | StructuredSerializeOptions): void;
     /**
      * Immediately terminates the worker. This does not let worker finish its operations; it is halted at once. ServiceWorker instances do not support this method.
      */
@@ -50,11 +50,15 @@ export declare class SharedWorkerPolyfill implements SharedWorker {
     /**
      * Registers an event handler of a specific event type on the EventTarget
      */
-    addEventListener<K extends keyof AbstractWorkerEventMap>(type: K, listener: (this: SharedWorker, ev: AbstractWorkerEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener<K extends keyof WorkerEventMap>(type: K, listener: (this: Worker, ev: WorkerEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    addEventListener<K extends keyof MessagePortEventMap>(type: K, listener: (this: MessagePort, ev: MessagePortEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
     /**
      * Removes an event listener from the EventTarget.
      */
-    removeEventListener<K extends keyof AbstractWorkerEventMap>(type: K, listener: (this: Worker | SharedWorker, ev: WorkerEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener<K extends keyof WorkerEventMap>(type: K, listener: (this: Worker, ev: WorkerEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    removeEventListener<K extends keyof MessagePortEventMap>(type: K, listener: (this: MessagePort, ev: MessagePortEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
     /**
      * Dispatches an event to this EventTarget.
      */
