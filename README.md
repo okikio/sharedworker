@@ -7,7 +7,9 @@
 
 A small mostly spec. compliant polyfill/ponyfill for `SharedWorkers`, it acts as a drop in replacement for normal `Workers`, and supports a similar API surface that matches normal `Workers`.
 
-> [Ponyfills](https://github.com/sindresorhus/ponyfill) are seperate modules that are included to replicate the functionality of the original API, but are not required to be used, while polyfills are update the original API on the global scope if it isn't supported in that specific environment or it's feature set is lacking compared to modern variations. 
+> [Ponyfills](https://github.com/sindresorhus/ponyfill) are seperate modules that are included to replicate the functionality of the original API, but are not required to be used, while polyfills are update the original API on the global scope if it isn't supported in that specific environment or it's feature set is lacking compared to modern variations.
+
+> Check out the [blog post](https://blog.okikio.dev/sharedworker), created for it's launch. 
 
 ## Installation
 ```bash
