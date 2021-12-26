@@ -7,6 +7,8 @@ import path from "path";
 import rehypeParse from "rehype-parse";
 import rehypeStringify from 'rehype-stringify';
 
+import { h, s } from "hastscript";
+
 export function redirectURLs(url) {
     if (/^\/docs/.test(url.path)) {
         return url.path.replace(/^\/docs\//, "/").replace(/\.md$/, "");
@@ -47,10 +49,30 @@ const __dirname = path.resolve(path.dirname(""));
     const plugins = [
         ["rehype-slug"],
         ["rehype-urls", redirectURLs],
-        ["rehype-highlight"],
-        ["rehype-external-links", { target: "_blank", rel: ["noopener"] }],
+        ["rehype-accessible-emojis"],
+        ["rehype-external-links", { 
+            target: "_blank", 
+            rel: ["noopener"],
+            content: [
+                // Based on the external icon from https://www.gitpod.io/blog/workspace-networking
+                h("span.external-icon", [
+                    s('svg', {xmlns: 'http://www.w3.org/2000/svg', width:"10", height:"10", viewBox:"0 0 14 14", fill:"none"}, [
+                        s("path", { 
+                            d: "M1 13L13 1m0 0H5m8 0v7", 
+                            "stroke":"currentColor", 
+                            "stroke-width": "2", 
+                            "stroke-linecap":"round", 
+                            "stroke-linejoin":"round" 
+                        })
+                    ])
+                ]), 
+                // `<span><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 14 14" fill="none"><path d="M1 13L13 1m0 0H5m8 0v7" stroke="#1155cc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`
+        ]
+        }],
+        ["rehype-preset-minify"]
     ];
 
+    
     let parser = unified()
         .use(rehypeParse)
         .use(rehypeStringify);

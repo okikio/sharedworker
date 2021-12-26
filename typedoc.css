@@ -8,6 +8,18 @@
     src: url("/fonts/FluentSystemIcons-Regular.ttf") format("truetype");
 }
 
+:root {
+    --light-color-background: #f8f9fa;
+    --light-color-panel-divider: #dadce0;
+    --light-link-color: #1155cc;
+    --light-external-icon: url(/assets/light-external.svg);
+    --dark-external-icon: url(/assets/dark-external.svg);
+    --dark-color-panel-divider: #47474d;
+    --dark-color-menu-divider-focus: #d73a49;
+    --dark-color-background: #1b1c1f;
+    --dark-color-secondary-background: #2d2f34;
+}
+
 .icon:before {
     font-family: FluentSystemIcons-Regular !important;
     font-style: normal;
@@ -35,31 +47,32 @@ a :is(h1, h2, h3, h4, h5, h6):after {
     content: "\f4e5";
 
     visibility: hidden;
-    font-size: 0.75em;
+    font-weight: 900;
+    font-size: 1em;
+    padding-left: 0.25em;
+    vertical-align: middle;
+    color: var(--color-link);
+}
+
+body.light a :is(h1, h2, h3, h4, h5, h6):after {
+    color: var(--light-link-color);
 }
 
 a :is(h1, h2, h3, h4, h5, h6):hover:after {
     visibility: visible;
 }
 
-a :is(h1, h2, h3, h4, h5, h6):is(:hover, :focus):after {
+a :is(h1, h2, h3, h4, h5, h6):is(:hover,:focus):after {
     visibility: visible;
 }
 
-:root {
-    --light-color-background: #f8f9fa;
-    --light-color-panel-divider: #dadce0;
-    --light-link-color: #1155cc;
-    --light-external-icon: url(/assets/light-external.svg);
-    --dark-external-icon: url(/assets/dark-external.svg);
-    --dark-color-panel-divider: #47474d;
-    --dark-color-menu-divider-focus: #d73a49;
-    --dark-color-background: #1b1c1f;
-    --dark-color-secondary-background: #2d2f34;
+details {
+    cursor: pointer;
 }
 
 pre {
     padding: 14px;
+    border: 1px solid rgb(20 20 20 / 0.25);
 }
 
 pre,
@@ -215,6 +228,11 @@ body.light .tsd-panel {
     text-decoration: underline solid;
     text-underline-offset: 0.2em;
     line-height: 1.85em;
+    color: var(--light-link-color);
+}
+
+body:not(.light) .tsd-panel a {
+    color: var(--color-link);
 }
 
 /* .tsd-panel a:is([href*="http://"], [href*="https://"]):not([href*="https://gitpod.io/#"]):after {
@@ -235,7 +253,7 @@ body.light .tsd-panel {
     margin-left: 0.2rem;
     margin-right: 0.1rem;
     opacity: 0.6;
-    transition: all 0.2s 50ms;
+    /* transition: all 0.2s 50ms; */
 }
 
 .tsd-widget:is(.search, .options, .menu):after {
