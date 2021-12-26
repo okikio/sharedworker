@@ -223,6 +223,9 @@ body.light .tsd-panel {
     margin: 1.5em 0px 10px 0px;
     padding: 0 0 10px 0;
     font-weight: 600;
+    
+    word-wrap: break-word;
+    white-space: normal;
 }
 
 .tsd-panel a {
