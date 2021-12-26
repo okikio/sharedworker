@@ -229,7 +229,9 @@ body.light .tsd-panel {
 }
 
 .tsd-panel a {
-    white-space: nowrap;
+    white-space: normal;
+    word-break: break-word;
+    
     text-decoration: underline solid;
     text-underline-offset: 0.2em;
     line-height: 1.85em;
