@@ -107,8 +107,3 @@ dist
 /lib
 /docs
 /@types
-docs/_headers
-docs/index.html
-docs/modules.html
-docs/assets/custom.css
-docs/classes/SharedWorkerPolyfill.html
