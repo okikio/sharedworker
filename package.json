@@ -103,7 +103,7 @@
     "rehype-urls": "^1.1.1",
     "rollup": "^2.62.0",
     "rollup-plugin-bundle-size": "^1.0.3",
-    "rollup-plugin-esbuild": "^4.7.2",
+    "rollup-plugin-esbuild": "^4.8.1",
     "rollup-plugin-terser": "^7.0.2",
     "semantic-release": "^18.0.1",
     "serve": "^13.0.2",

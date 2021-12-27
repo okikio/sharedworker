@@ -7,7 +7,7 @@
 
 A small mostly spec. compliant polyfill/ponyfill for `SharedWorkers`, it acts as a drop in replacement for normal `Workers`, and supports a similar API surface that matches normal `Workers`.
 
-> [Ponyfills](https://github.com/sindresorhus/ponyfill) are seperate modules that are included to replicate the functionality of the original API, but are not required to be used, while polyfills are update the original API on the global scope if it isn't supported in that specific environment or it's feature set is lacking compared to modern variations.
+> [Ponyfills](https://github.com/sindresorhus/ponyfill) are seperate modules that are included to replicate the functionality of the original API, but are not required to be used, while [Polyfills](https://developer.mozilla.org/en-US/docs/Glossary/Polyfill) update the original API on the global scope if it isn't supported in that specific environment or it's feature set is lacking compared to modern variations.
 
 > Check out the [blog post](https://blog.okikio.dev/sharedworker), created for it's launch. 
 
@@ -55,17 +55,16 @@ import SharedWorker from "https://cdn.jsdelivr.net/npm/@okikio/sharedworker";
 // or any number of other CDN's
 ```
 
-`@okikio/sharedworker` supports the same API surface as the `SharedWorker` and `Worker` classes, except it adds some none spec. compliant properties and methods to the `SharedWorkerPolyfill` class, this enables you to use `SharedWorker`'s on browsers that don't support it.
+`@okikio/sharedworker` supports the same API surfaces as `SharedWorker` and `Worker`, except it adds some none spec. compliant properties and methods to the `SharedWorkerPolyfill` class, that enables devs to use `SharedWorker`'s on browsers that don't support it.
 
-In order to support browsers that don't support `SharedWorker`'s the actual worker file needs to be setup slightly differently,
+In order to support browsers that don't natively support `SharedWorker`'s, the actual worker file needs to be tweaked slightly,
 
 ```ts
 /* 
  * All variables and values outside the `start(...)` function are shared between all pages, this behavior can cause unexpected bugs if you're not careful
  */
 const start = (port) => {
-    // All your normal Worker and SharedWorker stuff should just work
-    // With no more setup 
+    // All your normal Worker and SharedWorker stuff can be placed here and should just work, with no extra setup required 
     
     /** 
      * All variables and values inside the `start(...)` function are isolated to each page, and will be allocated seperately per page. 
@@ -80,7 +79,7 @@ self.onconnect = e => {
     start(port);
 };
 
-// This is the fallback, just in case the browser doesn't support SharedWorkers
+// This is the fallback, just in case the browser doesn't support SharedWorkers natively
 if ("SharedWorkerGlobalScope" in self) 
     start(self);
 ```
@@ -96,11 +95,11 @@ A couple sites that use `@okikio/sharedworker`:
 
 ## API
 
-The basics of `@okikio/sharedworker` rather closely match `SharedWorker`'s the main differences are that all the major methods and properties of `SharedWorker.prototype.port` are available directly on `SharedWorker.prototype` including `addEventListener` and `removeEventListener`. 
+The API of `@okikio/sharedworker` closely match the web `SharedWorker` API, except that all the major methods and properties of `SharedWorker.prototype.port` are available directly on `SharedWorker.prototype` including `addEventListener` and `removeEventListener`. 
 
-> _**Note:** the normal functionality of the methods and properties that were already there on `SharedWorker.prototype` will still be kept intact._ 
+> _**Note:** the normal functionality of the methods and properties that are normally available on `SharedWorker.prototype` will still be kept intact, in `@okikio/sharedworker`._ 
 
-In addition, the `terminate()` method was added to `@okikio/sharedworker` this allows both the `close()` method (this is from `SharedWorker.prototype.port` methods being available directly on `SharedWorker.prototype`) and the `terminate()` method to manually close workers. 
+In addition, the `terminate()` method was added to `@okikio/sharedworker`, this allows both the `close()` method (this is from `SharedWorker.prototype.port`) and the `terminate()` method to manually close workers. 
 
 Check out the [API site](https://sharedworker.okikio.dev) for detailed API documentation.
 
@@ -117,7 +116,7 @@ Native support for `SharedWorker` is not supported at all on Safari and IE, as w
 
 ## Contributing
 
-I encourage you to use [pnpm](https://pnpm.io/configuring) to for this repo, but you can also use [yarn](https://classic.yarnpkg.com/lang/en/) or [npm](https://npmjs.com) if you prefer.
+I encourage you to use [pnpm](https://pnpm.io/configuring) to contribute to this repo, but you can also use [yarn](https://classic.yarnpkg.com/lang/en/) or [npm](https://npmjs.com) if you prefer.
 
 Install all necessary packages
 ```bash
@@ -138,6 +137,8 @@ Preview API Docs
 ```bash
 npm run typedoc && npm run preview
 ```
+
+> _**Note**: this project uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) standard for commits, so, please format your commits using the rules it sets out._
 
 ## Licence
 See the [LICENSE](./LICENSE) file for license rights and limitations (MIT).

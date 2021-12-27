@@ -205,6 +205,7 @@ body.light .tsd-panel {
 
 .tsd-panel {
     padding: 45px 45px;
+    word-wrap: break-word;
 }
 
 @media (max-width: 700px) {
