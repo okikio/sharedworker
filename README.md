@@ -1,6 +1,6 @@
 # @okikio/sharedworker
 
-[![Open Bundle](https://bundle.js.org/badge-light.svg)](https://bundle.js.org/?q=@okikio/sharedworker&bundle)
+[![Open Bundle](https://bundlejs.com/badge-light.svg)](https://bundle.js.org/?q=@okikio/sharedworker&bundle)
 
 [NPM](https://www.npmjs.com/package/@okikio/sharedworker) <span style="padding-inline: 1rem">|</span> [Github](https://github.com/okikio/sharedworker#readme) <span style="padding-inline: 1rem">|</span> [Docs](https://sharedworker.okikio.dev) <span style="padding-inline: 1rem">|</span> [Licence](./LICENSE)  
 
