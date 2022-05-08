@@ -30,9 +30,10 @@
     "@types"
   ],
   "scripts": {
-    "typedoc": "rm -r -f docs/ && typedoc && node ./rehype.js && cp -a static/. docs/",
+    "typedoc": "rm -r -f docs/ && esbuild typedoc.tsx --jsx-factory=JSX.createElement --jsx-fragment=JSX.Fragment --format=cjs --outfile=typedoc.cjs && typedoc && node ./rehype.js && (cp -a static/. docs/ | cp -a assets/. docs/assets/.)",
     "dts": "rm -r -f @types/ && tsc -p dts.tsconfig.json",
     "preview": "serve docs",
+    "start": "vite docs",
     "commit": "git cz",
     "build": "rm -r -f lib/ && rollup -c",
     "pre-release": "pnpm build && pnpm typedoc && pnpm dts",
@@ -75,7 +76,7 @@
   "author": {
     "name": "Okiki Ojo",
     "email": "hey@okikio.dev",
-    "url": "https://blog.okikio.dev"
+    "url": "https://okikio.dev"
   },
   "license": "MIT",
   "bugs": {

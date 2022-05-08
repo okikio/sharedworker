@@ -1,6 +1,6 @@
 # @okikio/sharedworker
 
-[![Open Bundle](https://bundlejs.com/badge-light.svg)](https://bundle.js.org/?q=@okikio/sharedworker&bundle)
+[![Open Bundle](https://bundlejs.com/badge-light.svg)](https://bundlejs.com/?q=@okikio/sharedworker&bundle)
 
 [NPM](https://www.npmjs.com/package/@okikio/sharedworker) <span style="padding-inline: 1rem">|</span> [Github](https://github.com/okikio/sharedworker#readme) <span style="padding-inline: 1rem">|</span> [Docs](https://sharedworker.okikio.dev) <span style="padding-inline: 1rem">|</span> [Licence](./LICENSE)  
 
@@ -91,7 +91,7 @@ if ("SharedWorkerGlobalScope" in self)
 
 A couple sites that use `@okikio/sharedworker`:
 * [astro.build/play](https://astro.build/play) - [GitHub](https://github.com/snowpackjs/astro-repl)
-* [bundle.js.org](https://bundle.js.org) - [GitHub](https://github.com/okikio/bundle)
+* [bundlejs.com](https://bundlejs.com) - [GitHub](https://github.com/okikio/bundle)
 * Your site here...
 
 ## API
