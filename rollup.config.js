@@ -36,16 +36,14 @@ export default {
     ],
     plugins: [
         esbuild({
-            target: "es2021", // default, or 'es20XX', 'esnext'
+            target: "es2022", // default, or 'es20XX', 'esnext'
             logLevel: "info",
 
             color: true,
-            bundle: true,
             minify: true,
             treeShaking: true,
 
             sourcemap: true,
-            platform: "browser",
             tsconfig: "./tsconfig.json",
         }),
         nodeResolve(),
