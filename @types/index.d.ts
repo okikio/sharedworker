@@ -1,4 +1,5 @@
 /// <reference types="web" />
+/// <reference types="node" />
 /**
  * indicates if SharedWorker is supported, in the global scope
  */
