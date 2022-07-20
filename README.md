@@ -14,20 +14,20 @@ A small mostly spec. compliant polyfill/ponyfill for `SharedWorkers`, it acts as
 
 ## Installation
 ```bash
-npm install sharedworker
+npm install @okikio/sharedworker
 ```
 
 <details>
     <summary>Others</summary>
 
 ```bash
-yarn add sharedworker
+yarn add @okikio/sharedworker
 ```
 
 or 
 
 ```bash
-pnpm install sharedworker
+pnpm install @okikio/sharedworker
 ```
 </details>
 
