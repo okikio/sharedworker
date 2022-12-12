@@ -28,8 +28,15 @@ github:
 # List the start up tasks. You can start them in parallel in multiple terminals. See https://www.gitpod.io/docs/44_config_start_tasks/
 tasks:
   - init: >
+      nvm install &&
       npm install -g pnpm &&
-      pnpm install
+      pnpm install 
     command: >
+      nvm install &&
       npm install -g pnpm &&
-      pnpm build 
+      pnpm install &&
+      pnpm build
+
+vscode:
+  extensions:
+    - github.github-vscode-theme
