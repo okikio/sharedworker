@@ -32,6 +32,11 @@
       "import": "./lib/simple.mjs",
       "default": "./lib/simple.mjs"
     },
+    "./distribute": {
+      "require": "./lib/distribute.cjs",
+      "import": "./lib/distribute.mjs",
+      "default": "./lib/distribute.mjs"
+    },
     "./lib/*": "./lib/*"
   },
   "directories": {
