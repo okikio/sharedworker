@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
 import { umd as name } from "./package.json";
-import dts from 'vite-plugin-dts';
+
+import dts from "vite-plugin-dts"; 
+import glob from "tiny-glob";
 
 export default defineConfig({
   plugins: [
@@ -11,19 +13,24 @@ export default defineConfig({
   build: {
     outDir: "lib",
     lib: {
-      entry: "src/index.ts",
+      entry: await glob("src/*.ts"),
       name,
-      formats: ["es", "cjs", "umd"],
-      fileName(format) {
+      formats: ["es", "cjs"],
+      fileName(format, entryName) {
         switch (format) {
           case "es":
-            return "index.mjs";
+            return `${entryName}.mjs`;
           case "cjs":
-            return "index.cjs";
+            return `${entryName}.cjs`;
           default:
-            return "index.js";
+            return `${entryName}.js`;
         }
-      }
+      },
     },
+    rollupOptions: {
+      output: {
+        preserveModules: false
+      }
+    }
   },
 });
