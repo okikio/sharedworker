@@ -126,8 +126,5 @@
     "unified": "^10.1.2",
     "vite": "^4.0.1",
     "vite-plugin-dts": "^1.7.1"
-  },
-  "dependencies": {
-    "comlink": "^4.3.1"
   }
 }

@@ -1,5 +1,4 @@
 import { SimpleSharedWorker } from "./simple";
-import * as Comlink from "comlink";
 
 export const BROADCAST_CHANNEL_PREFIX = "@okikio/sharedworker";
 export const SEPERATOR = ":";
@@ -14,12 +13,13 @@ export function getChannelId(broadcastName: string, uuid: string) {
   return `${broadcastName}${SEPERATOR}${uuid}`
 }
 
-function request<T>(type: string, data: T = null) {
-  return { type, data }
+function request<T>(type: string, data: T = null, pingback: string = null) {
+  return { type, data, pingback }
 }
 
 const clearArpRequest = () => request("clear-arp");
-const arpRequest = (uuids: string[]) => request("arp", uuids);
+const arpRequest = (uuid: string, len: number) => request("arp", { uuid, length });
+const arpRespone = (uuids: string[]) => request("arp-response", uuids);
 
 export class DistributeSharedWorker {
   private broadcast: BroadcastChannel;
@@ -27,74 +27,67 @@ export class DistributeSharedWorker {
   private uuid = getUUID();
 
   /** Broadcast name + UUID */
-  private get channelId() { return getChannelId(this.broadcastName, this.uuid); }
+  private get channelName() { return getChannelId(this.broadcastName, this.uuid); }
   private uuids: string[] = [];
 
   /** Stores currently open channels */
+  private channel: BroadcastChannel;
   private channels = new Map<string, BroadcastChannel>();
 
+  private EVENTS = {
+    ARP: new MessageChannel(),
+    ARP_RESPONSE: new MessageChannel(),
+    CLEAR_ARP: new MessageChannel()
+  };
+
   constructor(
-    public url: string | URL,
+    private url: string | URL,
     opts?: WorkerOptions
   ) {
     this.broadcastName = `${BROADCAST_CHANNEL_PREFIX}${SEPERATOR}${url.toString()}`;
     this.broadcast = new BroadcastChannel(this.broadcastName);
+    this.channel = new BroadcastChannel(this.channelName);
 
-    // this.uuids.push(this.uuid);
+    this.uuids.push(this.uuid);
     console.log({ uuid: this.uuid });
 
+    this.broadcast.addEventListener("message", this.requestHandler.bind(this));
+
     (async () => {
-      await this.newRequest(clearArpRequest());
-      await this.newRequest(arpRequest(this.uuids));
-    // this.broadcast.postMessage(arpRequest(this.uuids));
-    // this.broadcast.postMessage(clearArpRequest());
+      // this.broadcast.postMessage(clearArpRequest());
+      this.broadcast.postMessage(arpRequest(this.uuid, this.uuids.length));
 
     })();
   }
 
-  private requestHandler(resolve: () => void) {
-    return async ({ data: msg }: MessageEvent<ReturnType<typeof request>>) => {
-      const { type, data } = msg;
+  private requestHandler({ data: msg }: MessageEvent<ReturnType<typeof request>>){
+    const { type, data } = msg;
+    console.log({ type, uuids: this.uuids, data });
 
-      switch (type) {
-        case "arp": {
-          const uuids = data as ReturnType<typeof arpRequest>['data'];
-          console.log("type", this.uuids)
-          const unique = this.uuids.filter(x => !uuids.includes(x));
-          if (unique.length > 0) {
-            this.uuids.push(...unique);
-            // this.newRequest(arpRequest(this.uuids));
-          }
-          console.log(this.uuids);
-          // if (unique.length == 0) {
-            resolve();
-          // }
-          break;
+    switch (type) {
+      case "arp": {
+        const { uuid, length } = data as ReturnType<typeof arpRequest>['data'];
+        const unique = !this.uuids.includes(uuid);
+        if (unique) {
+          this.uuids.push(uuid);
+        } 
+
+        console.log({ uuidsLen: this.uuids.length, length, data })
+        if (this.uuids.length != length) {
+          // this.broadcast.postMessage(arpRequest(this.uuid, this.uuids.length));
         }
 
-        case "clear-arp": {
-          this.uuids = [this.uuid];
-          resolve();
-          break;
-        }
+
+        break;
+      }
+
+      case "clear-arp": {
+        this.uuids = [this.uuid];
+        break;
       }
     }
   }
 
-  private newRequest(req: ReturnType<typeof request>) {
-    return new Promise<void>(async (done) => {
-      let handler: ReturnType<typeof this.requestHandler>;
-      this.broadcast.postMessage(req);
-
-      await new Promise<void>(resolve => {
-        this.broadcast.addEventListener("message", (handler = this.requestHandler.call(this, resolve)));
-      });
-
-      this.broadcast.removeEventListener("message", handler);
-      console.log("Resolved?")
-      done();
-    })
-  }
 
 }
 
