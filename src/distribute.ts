@@ -24,6 +24,7 @@ function request<T>(type: string, data: T = null) {
 }
 
 const clearArpRequest = () => request("clear-arp");
+const retryArpRequest = () => request("retry-arp");
 
 const arpRequest = (uuid: UUID, uuids: string[]) => {
   return request("arp", { uuid, uuidstr: toUUIDStr(uuid), uuids });
@@ -60,6 +61,8 @@ export class DistributeSharedWorker {
   private uuids: UUID[] = [];
   private uuidsstr: string[] = [];
 
+  private ActualWorker: Worker; 
+
   private eventemitter = new EventTarget();
   private EVENTS = {
     ARP: 'arp'
@@ -78,7 +81,7 @@ export class DistributeSharedWorker {
 
   constructor(
     private url: string | URL,
-    opts?: WorkerOptions
+    private opts?: WorkerOptions
   ) {
     this.broadcastName = `${BROADCAST_CHANNEL_PREFIX}${SEPERATOR}${url.toString()}`;
     this.broadcast = new BroadcastChannel(this.broadcastName);
@@ -89,18 +92,44 @@ export class DistributeSharedWorker {
     this.requestHandler = this.requestHandler.bind(this);
 
     this.broadcast.addEventListener("message", this.requestHandler); 
-    globalThis.addEventListener('pagehide', (event) => { 
+
+    // this.maxConnections = 0;
+    this.arpRequest();
+
+    console.log({ uuid: this.uuidstr });
+    
+    this.eventemitter.addEventListener(this.EVENTS.ARP, () => {
+      const mainChannelUUID = this.uuids.sort((a, b) => (a[1] - b[1]))[0];
+      console.log({
+        elect: true,
+        maxConnections: this.maxConnections,
+        other: this.uuids
+      })
+
+      if (toUUIDStr(mainChannelUUID) !== this.channel?.name) {
+        this.channel?.close?.();
+        this.channel = null;
+
+        this.getChannel(mainChannelUUID);
+        console.log(toUUIDStr(mainChannelUUID))
+      }
+    });
+
+    globalThis.addEventListener('beforeunload', (event) => {
       console.log("pagehide")
+      this.broadcast.removeEventListener("message", this.requestHandler);
+
       const prevMaxConnections = this.maxConnections;
       this.maxConnections = 0;
 
-      if (prevMaxConnections > 0) this.arpRequest();
-      // this.broadcast.postMessage(removeArpRequest(this.uuid));
+      if (prevMaxConnections > 0) { 
+        // this.arpRequest();
+
+        this.resetUUIDs();
+        this.broadcast.postMessage(clearArpRequest());
+        this.broadcast.postMessage(retryArpRequest());
+      }
     });
-
-    console.log({ uuid: this.uuidstr });
-
-    this.arpRequest();
   }
 
   private requestHandler({ data: msg }: MessageEvent<ReturnType<typeof request>>){
@@ -110,6 +139,8 @@ export class DistributeSharedWorker {
       case "arp": {
         const { uuid, uuidstr, uuids } = data as ReturnType<typeof arpRequest>['data'];
 
+        // console.log({ thisuuids: this.uuids, uuids, uuidstr, max: this.maxConnections })
+
         const unique = !this.uuidsstr.includes(uuidstr);
         if (unique) this.addUUID(uuid);
 
@@ -117,12 +148,10 @@ export class DistributeSharedWorker {
           this.broadcast.postMessage(arpRequest(this.uuid, [...uuids, this.uuidstr]));
         }
 
-        // console.log({ thisuuids: this.uuidsstr, uuids, max: this.maxConnections })
-
         if (this.uuids.length == this.maxConnections) {
           this.eventemitter.dispatchEvent(new Event(this.EVENTS.ARP));
-          // this.ARP_PROMISE.resolve(this.uuids);
         }
+
         break;
       }
 
@@ -132,37 +161,33 @@ export class DistributeSharedWorker {
         break;
       }
 
+      case "retry-arp": {
+        this.arpRequest();
+        break;
+      }
+
       case "clear-arp": {
         this.resetUUIDs();
+        console.log("Reset UUIDs")
         break;
       }
     }
   }
 
-  private async arpRequest() {
+  private arpRequest() {
     this.maxConnections++;
 
     this.ARP_PROMISE = newPromise<UUID[]>();
 
+    this.resetUUIDs();
     this.broadcast.postMessage(clearArpRequest());
     this.broadcast.postMessage(arpRequest(this.uuid, []));
 
-    // await this.ARP_PROMISE.promise;
-    this.eventemitter.addEventListener(this.EVENTS.ARP, () => {
-      console.log(this.uuids)
-      // const mainChannelUUID = this.uuids.sort((a, b) => (a[1] - b[1]))[0];
-      // console.log({
-      //   maxConnections: this.maxConnections
-      // })
-
-      // if (toUUIDStr(mainChannelUUID) !== this.channel?.name) {
-      //   this.channel?.close?.();
-      //   this.channel = null;
-
-      //   this.getChannel(mainChannelUUID);
-      //   console.log(toUUIDStr(mainChannelUUID))
-      // }
-    });
+    setTimeout(() => {
+      if (this.maxConnections <= 1) {
+        this.eventemitter.dispatchEvent(new Event(this.EVENTS.ARP));
+      }
+    }, 300);
   }
 
   private addUUID(uuid: UUID) {
@@ -186,6 +211,19 @@ export class DistributeSharedWorker {
 
     const name = getChannelName(this.broadcastName, uuid);
     this.channel = new BroadcastChannel(name);
+
+    this.channel.onmessage = ({ data }: MessageEvent<{ uuid: UUID, message: any }>) => {
+      if (toUUIDStr(uuid) == toUUIDStr(data.uuid)) {
+        this.ActualWorker?.postMessage(data);
+      }
+    }
+
+    if (!this.ActualWorker && toUUIDStr(uuid) == toUUIDStr(this.uuid)) {
+      this.ActualWorker = new Worker(this.url, this.opts);
+      this.ActualWorker.onmessage = ({ data }: MessageEvent<{ uuid: UUID, message: any }>) => {
+        this.channel?.postMessage(data);
+      }
+    }
     return this.channel; 
   }
 }

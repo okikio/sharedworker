@@ -1,3 +1,3 @@
 import { DistributeSharedWorker } from "../src/distribute";
 
-new DistributeSharedWorker("./worker.ts")
+new DistributeSharedWorker("./worker.ts", { type: "module" })
