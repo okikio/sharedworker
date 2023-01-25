@@ -80,8 +80,7 @@ self.onconnect = e => {
     start(port);
 };
 
-// This is the fallback, just in case the browser doesn't support SharedWorkers natively
-if ("SharedWorkerGlobalScope" in self) 
+if (!("SharedWorkerGlobalScope" in self)) 
     start(self);
 ```
 
