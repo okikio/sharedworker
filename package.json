@@ -1,6 +1,6 @@
 {
   "name": "@okikio/sharedworker",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "type": "module",
   "sideEffects": false,
   "description": "A small mostly spec. compliant polyfill/ponyfill for SharedWorkers, it acts as a drop in replacement for normal Workers, and supports an API surface that matches normal Workers.",
@@ -57,7 +57,7 @@
       "@semantic-release/changelog",
       "@semantic-release/npm",
       "@semantic-release/git",
-     [
+      [
         "@semantic-release/github",
         {
           "assets": [
