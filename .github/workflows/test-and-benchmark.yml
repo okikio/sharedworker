@@ -1,17 +1,30 @@
-name: Release
-on: workflow_dispatch
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Test & Benchmark CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '*.ts'
+      - '*.js'
+      - '*.json'
+      - '*.jsonc'
+      - '*.yaml'
+      - '.github/**/test-and-benchmark.yml'
+      - '.typedoc/**/*'
+      - 'media/**/*'
+      - 'tests/**/*'
+      - 'scripts/**/*' 
+  workflow_dispatch: 
 
 jobs:
-  release:
-    name: Release
+  build:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     permissions:
-      contents: write # to be able to publish a GitHub release
-      issues: write # to be able to comment on released issues
-      pull-requests: write # to be able to comment on released pull requests
-      packages: write # to be able to publish a GitHub package
-      id-token: write
+      contents: read
 
     steps:
       - uses: actions/checkout@v3
@@ -31,7 +44,7 @@ jobs:
           # Version of pnpm to install
           version: latest # optional
           # If specified, run `pnpm install`
-          run_install: true # optional, default is null
+          run_install: false # optional, default is null
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -49,16 +62,3 @@ jobs:
           
       - name: Build
         run: pnpm pre-release
-
-      - name: Release
-        run: pnpm semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      # - name: Push changes
-      #   if: ${{ github.ref == 'refs/heads/main' }}
-      #   uses: ad-m/github-push-action@master
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     branch: ${{ github.ref }}

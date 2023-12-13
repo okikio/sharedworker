@@ -6,42 +6,57 @@
   "description": "A small mostly spec. compliant polyfill/ponyfill for SharedWorkers, it acts as a drop in replacement for normal Workers, and supports an API surface that matches normal Workers.",
   "umd": "sharedworker",
   "access": "public",
-  "legacy": "lib/index.js",
+  "legacy": "lib/index.cjs",
   "main": "lib/index.cjs",
-  "types": "@types/index.d.ts",
-  "browser": "lib/index.mjs",
-  "module": "lib/index.mjs",
+  "browser": "lib/index.js",
+  "module": "lib/index.js",
   "exports": {
     ".": {
-      "require": "./lib/index.cjs",
-      "import": "./lib/index.mjs",
-      "default": "./lib/index.mjs"
+      "require": {
+        "types": "./lib/index.d.cts",
+        "default": "./lib/index.cjs"
+      },
+      "import": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      }
     },
-    "./lib/*": "./lib/*"
+    "./lib/*": "./lib/*",
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
   },
   "directories": {
     "lib": "./lib",
-    "src": "./src",
-    "@types": "./@types"
+    "src": "./src"
   },
   "files": [
     "lib",
-    "src",
-    "@types"
+    "src"
   ],
+  "publishConfig": {
+    "provenance": true
+  },
   "scripts": {
-    "typedoc": "rm -r -f docs/ && esbuild typedoc.tsx --jsx-factory=JSX.createElement --jsx-fragment=JSX.Fragment --format=cjs --outfile=typedoc.cjs && typedoc && node ./rehype.js && node ./rehype.js && cp -a static/. docs/",
-    "dts": "rm -r -f @types/ && tsc -p dts.tsconfig.json",
-    "preview": "serve docs",
-    "start": "vite docs",
-    "commit": "git cz",
-    "build": "rm -r -f lib/ && rollup -c",
-    "pre-release": "pnpm build && pnpm typedoc && pnpm dts",
+    "typedoc": "esbuild ./.typedoc/typedoc.tsx --format=cjs --outfile=./.typedoc/typedoc.cjs && typedoc --options ./.typedoc/typedoc.json",
+    "vite": "vite --config vite.config.ts",
+    "dev": "vite dev --config vite.config.ts",
+    "start": "vite dev --config vite.config.ts",
+    "build": "tsup",
+    "commitlint": "commitlint --edit",
+    "pre-release": "pnpm build && pnpm typedoc",
+    "prepare": "[ \"$NODE_ENV\" = \"production\" ] || [ -n \"$CI\" ] && echo \"Skipping Husky Install...\" || husky install",
     "semantic-release": "semantic-release"
   },
   "release": {
     "branches": [
       "main"
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      "@semantic-release/git",
+      "@semantic-release/github"
     ]
   },
   "changelog": {
@@ -55,10 +70,10 @@
     },
     "cacheDir": ".changelog"
   },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS --verbose"
-    }
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
   },
   "repository": {
     "type": "git",
@@ -71,7 +86,7 @@
     "web",
     "polyfill",
     "ponyfill",
-    "es2021"
+    "es2023"
   ],
   "author": {
     "name": "Okiki Ojo",
@@ -84,35 +99,27 @@
   },
   "homepage": "https://sharedworker.okikio.dev",
   "devDependencies": {
-    "@commitlint/cli": "^16.2.4",
-    "@commitlint/config-conventional": "^16.2.4",
-    "@playwright/test": "^1.21.1",
-    "@rollup/plugin-commonjs": "^22.0.0",
-    "@rollup/plugin-node-resolve": "^13.3.0",
-    "@types/web": "^0.0.64",
-    "esbuild": "^0.14.38",
-    "fast-glob": "^3.2.11",
-    "hastscript": "^7.0.2",
-    "husky": "^7.0.4",
-    "playwright": "^1.21.1",
-    "pnpm": "^7.0.1",
-    "rehype-accessible-emojis": "^0.3.2",
-    "rehype-external-links": "^1.0.1",
-    "rehype-parse": "^8.0.4",
-    "rehype-slug": "^5.0.1",
-    "rehype-stringify": "^9.0.3",
-    "rehype-urls": "^1.1.1",
-    "rollup": "^2.72.1",
-    "rollup-plugin-bundle-size": "^1.0.3",
-    "rollup-plugin-esbuild": "^4.9.1",
-    "rollup-plugin-terser": "^7.0.2",
-    "semantic-release": "^19.0.2",
-    "serve": "^13.0.2",
-    "typedoc": "^0.22.15",
-    "typedoc-plugin-extras": "^2.2.3",
-    "typedoc-plugin-mdn-links": "^1.0.6",
-    "typedoc-plugin-missing-exports": "^0.22.6",
-    "typescript": "^4.6.4",
-    "unified": "^10.1.2"
+    "@commitlint/cli": "^18.4.3",
+    "@commitlint/config-conventional": "^18.4.3",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^11.1.0",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^9.2.5",
+    "@semantic-release/npm": "^11.0.2",
+    "@semantic-release/release-notes-generator": "^12.1.0",
+    "@types/node": "^20.10.4",
+    "@types/web": "^0.0.127",
+    "esbuild": "^0.19.9",
+    "husky": "^8.0.3",
+    "pnpm": "^8.12.0",
+    "semantic-release": "^22.0.12",
+    "tsup": "^8.0.1",
+    "typedoc": "^0.25.4",
+    "typedoc-plugin-extras": "^3.0.0",
+    "typedoc-plugin-inline-sources": "^1.0.1",
+    "typedoc-plugin-mdn-links": "^3.1.7",
+    "typedoc-plugin-missing-exports": "^2.1.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8"
   }
 }

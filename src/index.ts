@@ -74,9 +74,9 @@ export class SharedWorkerPolyfill implements SharedWorker, EventTarget, Abstract
      */
     public postMessage(message: any, transfer?: Transferable[] | StructuredSerializeOptions) {
         if (SharedWorkerSupported) {
-            return (this.ActualWorker as SharedWorker)?.port.postMessage(message, transfer as unknown);
+            return (this.ActualWorker as SharedWorker)?.port.postMessage(message, transfer as Transferable[]);
         } else {
-            return (this.ActualWorker as Worker).postMessage(message, transfer as unknown);
+            return (this.ActualWorker as Worker).postMessage(message, transfer as Transferable[]);
         }
     }
 
@@ -110,7 +110,7 @@ export class SharedWorkerPolyfill implements SharedWorker, EventTarget, Abstract
      */
     public get onerror()
         { return this.ActualWorker.onerror; }
-    public set onerror(value: (this: AbstractWorker, ev: ErrorEvent) => any) {
+    public set onerror(value: ((this: AbstractWorker, ev: ErrorEvent) => any) | null) {
         this.ActualWorker.onerror = value;
     }
     
