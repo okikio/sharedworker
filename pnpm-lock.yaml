@@ -38,6 +38,9 @@ devDependencies:
   esbuild:
     specifier: ^0.19.9
     version: 0.19.9
+  esbuild-plugin-umd-wrapper:
+    specifier: ^2.0.0
+    version: 2.0.0
   husky:
     specifier: ^8.0.3
     version: 8.0.3
@@ -1394,6 +1397,10 @@ packages:
     resolution: {integrity: sha512-7dFHNmqeFSEt2ZBsCriorKnn3Z2pj+fd9kmI6QoWw4//DL+icEBfc0U7qJCisqrTsKTjw4fNFy2pW9OqStD84g==}
     dependencies:
       is-arrayish: 0.2.1
+    dev: true
+
+  /esbuild-plugin-umd-wrapper@2.0.0:
+    resolution: {integrity: sha512-pcu2/lcm29S85VCnSJuValrQ8FqeFJs5VWEwfp7vBRsOHjxZypcxgwXjxDIxDRo17uOcENZIbgz2szjln029eQ==}
     dev: true
 
   /esbuild@0.19.9:
