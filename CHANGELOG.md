@@ -1,3 +1,10 @@
+## [1.0.7](https://github.com/okikio/sharedworker/compare/v1.0.6...v1.0.7) (2024-2-1)
+
+
+### Bug Fixes
+
+* add back support for umd [#7](https://github.com/okikio/sharedworker/issues/7) ([3f1a376](https://github.com/okikio/sharedworker/commit/3f1a376e6c0f8ba1b49560f356c67d667b6c3c9b))
+
 ## [1.0.6](https://github.com/okikio/sharedworker/compare/v1.0.5...v1.0.6) (2023-12-13)
 
 
