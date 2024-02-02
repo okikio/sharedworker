@@ -41,7 +41,7 @@ import SharedWorker from "@okikio/sharedworker";
 
 You can also use it directly through a script tag:
 ```html
-<script src="https://unpkg.com/@okikio/sharedworker" type="module"></script>
+<script src="https://unpkg.com/@okikio/sharedworker"></script>
 <script type="module">
     // You can then use it like this
     const { SharedWorkerPolyfill: SharedWorker } = window.sharedworker; 
