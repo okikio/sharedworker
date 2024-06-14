@@ -4,19 +4,26 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ponyfill SharedWorker WebWorkers</title>
+  <title>Test of Distributed WebWorkers</title>
 </head>
 <body>
-  <h1>Test of Ponyfill SharedWorker WebWorkers</h1>
+  <a href="/">Home</a>
+
+  <h1>Test of Distributed WebWorkers</h1>
   <p>
     Open a bunch of tabs using the same URL.
     Then check out the DevTools & Console.
     You can also check the browser task manager to confirm.
   </p>
 
-  <script type="module">
-    import { run } from "./main.ts";
-    run("ponyfill");
+  <!-- <h2>Results</h2>
+  <div id="results"></div> -->
+
+  <script>
+    import { run } from "../scripts/main.ts";
+    const worker = run("distributed");
+
+    // const results = document.querySelector("#results");
   </script>
 </body>
 </html>

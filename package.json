@@ -78,8 +78,10 @@
   },
   "scripts": {
     "typedoc": "tsx ./.typedoc/build.ts && typedoc",
-    "preview": "vite tests",
-    "start": "vite tests",
+    "preview": "astro preview --root ./tests",
+    "start": "astro dev --root ./tests",
+    "dev": "astro dev --root ./tests",
+    "build:test": "astro build --root ./tests",
     "repl": "tsx repl.ts",
     "build": "tsup",
     "pre-release": "pnpm build && pnpm typedoc",
@@ -133,12 +135,12 @@
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
     "@types/web": "^0.0.148",
+    "astro": "^4.10.2",
     "husky": "^9.0.11",
     "pnpm": "^9.3.0",
     "semantic-release": "^24.0.0",
     "tsup": "^8.1.0",
     "tsx": "^4.15.4",
-    "typescript": "^5.4.5",
-    "vite": "^5.3.1"
+    "typescript": "^5.4.5"
   }
 }

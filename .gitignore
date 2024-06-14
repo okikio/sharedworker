@@ -107,3 +107,5 @@ dist
 lib/
 docs/
 @types/
+dist/
+.astro/
