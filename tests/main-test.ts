@@ -1,3 +1,3 @@
-import { SharedWorkerPonyfill } from "../src/ponyfill";
+import { SharedWorkerPonyfill } from "../src/ponyfill.ts";
 
 new SharedWorkerPonyfill("./worker.ts")
