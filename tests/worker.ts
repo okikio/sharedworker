@@ -1,4 +1,7 @@
+/// <reference types="webworker" />
 import { SharedWorkerSupported } from "../src/ponyfill.ts";
-export {};
 
-console.log(SharedWorkerSupported ? "SharedWorker" : "Worker")
+console.log(SharedWorkerSupported ? "SharedWorker" : "Worker");
+globalThis.postMessage("Hello from the worker!");
+
+export { };
