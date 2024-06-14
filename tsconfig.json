@@ -1,16 +1,21 @@
 {
   "compilerOptions": {
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "target": "ES2022",
     "module": "ES2022",
-    "lib": ["ES2022", "ES2021", "DOM"],
+    "lib": ["ES2022", "DOM"],
     "sourceMap": true,
     "outDir": "lib",
+    "declaration": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "allowArbitraryExtensions": true,
+    "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true,
+    "verbatimModuleSyntax": true,
+    "strict": true
   },
-  "include": ["src"],
+  "include": ["src", "service-worker.ts", "index.ts", "distribute.ts", "utils"],
   "exclude": ["node_modules"]
 }

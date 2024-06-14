@@ -1,3 +1,0 @@
-Sitemap: https://sharedworker.okikio.dev/sitemap.xml
-User-agent: *
-Allow: /

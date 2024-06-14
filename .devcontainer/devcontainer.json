@@ -4,25 +4,28 @@
     "dockerfile": "Dockerfile"
   },
 
-  // Add the IDs of extensions you want installed when the container is created.
-  "extensions": ["github.github-vscode-theme"],
-
   // Features to add to the dev container. More info: https://containers.dev/implementors/features.
   "features": {
-    "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/devcontainers/features/node:1": {},
-    "ghcr.io/NicoVIII/devcontainer-features/pnpm:1": {}
+    "ghcr.io/devcontainers-contrib/features/deno:1": {}
   },
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   "forwardPorts": [3000],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "pnpm install"
+  "postCreateCommand": "pnpm install",
 
   // Configure tool-specific properties.
-  // "customizations": {},
+  "customizations": {
+    "vscode": {
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        "github.github-vscode-theme",
+        "denoland.vscode-deno",
+        "yoavbls.pretty-ts-errors"
+      ]
+    }
+  }
 
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
   // "remoteUser": "root"

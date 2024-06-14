@@ -1,4 +1,4 @@
-import { SharedWorkerSupported } from "../src/ponyfill";
+import { SharedWorkerSupported } from "../ponyfill.ts";
 export {};
 
 console.log(SharedWorkerSupported ? "SharedWorker" : "Worker")

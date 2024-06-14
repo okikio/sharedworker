@@ -8,53 +8,80 @@
   "access": "public",
   "legacy": "lib/index.cjs",
   "main": "lib/index.cjs",
-  "types": "@types/index.d.ts",
-  "browser": "lib/index.mjs",
-  "module": "lib/index.mjs",
+  "browser": "lib/index.umd.js",
+  "module": "lib/index.js",
   "exports": {
     ".": {
-      "require": "./lib/index.cjs",
-      "import": "./lib/index.mjs",
-      "default": "./lib/index.mjs"
+      "require": {
+        "types": "./lib/index.d.cts",
+        "default": "./lib/index.cjs"
+      },
+      "import": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      }
     },
     "./polyfill": {
-      "require": "./lib/polyfill.cjs",
-      "import": "./lib/polyfill.mjs",
-      "default": "./lib/polyfill.mjs"
+      "require": {
+        "types": "./lib/polyfill.d.cts",
+        "default": "./lib/polyfill.cjs"
+      },
+      "import": {
+        "types": "./lib/polyfill.d.ts",
+        "default": "./lib/polyfill.js"
+      }
     },
     "./ponyfill": {
-      "require": "./lib/ponyfill.cjs",
-      "import": "./lib/ponyfill.mjs",
-      "default": "./lib/ponyfill.mjs"
+      "require": {
+        "types": "./lib/ponyfill.d.cts",
+        "default": "./lib/ponyfill.cjs"
+      },
+      "import": {
+        "types": "./lib/ponyfill.d.ts",
+        "default": "./lib/ponyfill.js"
+      }
     },
     "./simple": {
-      "require": "./lib/simple.cjs",
-      "import": "./lib/simple.mjs",
-      "default": "./lib/simple.mjs"
+      "require": {
+        "types": "./lib/simple.d.cts",
+        "default": "./lib/simple.cjs"
+      },
+      "import": {
+        "types": "./lib/simple.d.ts",
+        "default": "./lib/simple.js"
+      }
     },
-    "./distribute": {
-      "require": "./lib/distribute.cjs",
-      "import": "./lib/distribute.mjs",
-      "default": "./lib/distribute.mjs"
+    "./distributed": {
+      "require": {
+        "types": "./lib/distributed.d.cts",
+        "default": "./lib/distributed.cjs"
+      },
+      "import": {
+        "types": "./lib/distributed.d.ts",
+        "default": "./lib/distributed.js"
+      }
     },
-    "./lib/*": "./lib/*"
+    "./lib/*": "./lib/*",
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
   },
   "directories": {
     "lib": "./lib",
-    "src": "./src",
-    "@types": "./@types"
+    "src": "./src"
   },
   "files": [
     "lib",
-    "src",
-    "@types"
+    "src"
   ],
+  "publishConfig": {
+    "provenance": true
+  },
   "scripts": {
-    "typedoc": "esno ./.typedoc/build.ts && typedoc && esno ./rehype.ts",
-    "preview": "vite docs",
-    "start": "vite docs",
-    "repl": "esno repl.ts",
-    "build": "vite build",
+    "typedoc": "tsx ./.typedoc/build.ts && typedoc",
+    "preview": "vite tests",
+    "start": "vite tests",
+    "repl": "tsx repl.ts",
+    "build": "tsup",
     "pre-release": "pnpm build && pnpm typedoc",
     "semantic-release": "semantic-release"
   },
@@ -103,28 +130,14 @@
   },
   "homepage": "https://sharedworker.okikio.dev",
   "devDependencies": {
-    "@commitlint/cli": "^17.3.0",
-    "@commitlint/config-conventional": "^17.3.0",
-    "@types/web": "^0.0.84",
-    "esno": "^0.16.3",
-    "fast-glob": "^3.2.12",
-    "hastscript": "^7.1.0",
-    "husky": "^8.0.2",
-    "pnpm": "^7.18.2",
-    "rehype-accessible-emojis": "^0.3.2",
-    "rehype-external-links": "^2.0.1",
-    "rehype-parse": "^8.0.4",
-    "rehype-slug": "^5.1.0",
-    "rehype-stringify": "^9.0.3",
-    "rehype-urls": "^1.1.1",
-    "semantic-release": "^19.0.5",
-    "tiny-glob": "^0.2.9",
-    "typedoc": "^0.23.22",
-    "typedoc-plugin-extras": "^2.3.1",
-    "typedoc-plugin-mdn-links": "^2.0.0",
-    "typescript": "^4.9.4",
-    "unified": "^10.1.2",
-    "vite": "^4.0.1",
-    "vite-plugin-dts": "^1.7.1"
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "@types/web": "^0.0.148",
+    "husky": "^9.0.11",
+    "pnpm": "^9.3.0",
+    "semantic-release": "^24.0.0",
+    "tsup": "^8.1.0",
+    "tsx": "^4.15.4",
+    "typescript": "^5.4.5"
   }
 }

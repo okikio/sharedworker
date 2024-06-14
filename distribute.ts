@@ -3,11 +3,11 @@ export const SEPERATOR = ":";
 
 export const BROADCAST_CHANNEL_NAME = `${BROADCAST_CHANNEL_PREFIX}${SEPERATOR}all`;
 
-export function newUUID(size = 10): [string, number] {
+export function newUUID(size = 10) {
   return [
     crypto.getRandomValues(new Uint32Array(size)).join(SEPERATOR), 
     Date.now()
-  ];
+  ] as const;
 }
 
 type UUID = ReturnType<typeof newUUID>;
@@ -45,7 +45,7 @@ function toNumber(num: unknown) {
 function newPromise<T = unknown>() {
   let resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: any) => void;
   const promise = new Promise<T>((res, rej) => (resolve = res, reject = rej));
-  return { promise, resolve, reject };
+  return { promise, resolve, reject } as const;
 }
 
 export class DistributeSharedWorker {
