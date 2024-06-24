@@ -19,7 +19,14 @@ export function getChannelName(broadcastName: string, uuid: UUID) {
   return `${broadcastName}${SEPERATOR}${toUUIDStr(uuid)}`
 }
 
-function request<T>(type: string, data: T = null) {
+export enum RequestType {
+  Election = "election",
+  Leader = "leader",
+  Connect = "connect",
+  
+}
+
+function request<T>(type: string, data: T | null = null) {
   return { type, data };
 }
 

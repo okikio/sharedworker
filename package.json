@@ -134,13 +134,15 @@
   "devDependencies": {
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
-    "@types/web": "^0.0.148",
+    "@types/web": "^0.0.149",
     "astro": "^4.10.2",
+    "bun": "^1.1.13",
     "husky": "^9.0.11",
     "pnpm": "^9.3.0",
     "semantic-release": "^24.0.0",
     "tsup": "^8.1.0",
-    "tsx": "^4.15.4",
+    "tsx": "^4.15.5",
     "typescript": "^5.4.5"
-  }
+  },
+  "packageManager": "pnpm@9.3.0+sha512.ee7b93e0c2bd11409c6424f92b866f31d3ea1bef5fbe47d3c7500cdc3c9668833d2e55681ad66df5b640c61fa9dc25d546efa54d76d7f8bf54b13614ac293631"
 }

@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 // Adaptation note: This code is based on a utility for web workers found at https://github.com/okikio/bundle/blob/main/src/ts/util/WebWorker.ts under the MIT license.
 // For historical reference or in case of future changes, the original version is preserved at https://gist.github.com/okikio/6809cfc0cdbf1df4c0573addaaf7e259.
 
