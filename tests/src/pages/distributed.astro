@@ -21,7 +21,8 @@
 
   <script>
     import { run } from "../scripts/main.ts";
-    const worker = run("distributed");
+    const sharedworker = run("distributed");
+    sharedworker.port.start();
 
     // const results = document.querySelector("#results");
   </script>

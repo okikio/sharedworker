@@ -1,4 +1,4 @@
-import { DistributeSharedWorker } from "../../../src/distribute.ts";
+import { DistributeSharedWorker } from "../../../src/distribute-v2.ts";
 import { SharedWorkerPonyfill } from "../../../src/ponyfill.ts";
 
 export function run(type = "distributed") {

@@ -1,4 +1,4 @@
-  // Private method to initialize the secret key
+// Private method to initialize the secret key
 export async function initializeSecretKey() {
   return await crypto.subtle.generateKey(
     { name: 'AES-GCM', length: 256 },

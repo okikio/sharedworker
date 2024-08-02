@@ -8,5 +8,5 @@ export const RequestMessage = {
   Connect: "connect",
   Disconnect: "disconnect",
   Blacklist: "blacklist",
-  Recieved: "recieved"
+  Heartbeat: "heartbeat"
 };

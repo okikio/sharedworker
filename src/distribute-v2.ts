@@ -10,7 +10,7 @@ export function request<T>(type: RequestEnum, data: T | null = null, frame: Fram
   const uniqueId = crypto.randomUUID();
   const timestamp = Date.now();
 
-  Object.assign(frame, { uniqueId, timestamp, ttl: 2 });
+  Object.assign(frame, { uniqueId, timestamp, ttl: frame.ttl ?? 2 });
   return { type, data, frame };
 }
 
@@ -37,8 +37,14 @@ export class DistributeSharedWorker extends EventTarget implements SharedWorker 
   
   // Event handlers
   #resolvers = {
+    connections: new Map<string, ReturnType<typeof Promise.withResolvers<void>>>(),
     elections: new Map<string, ReturnType<typeof Promise.withResolvers<string>>>(),
-    leaders: new Map<string, ReturnType<typeof Promise.withResolvers<string>>>(), 
+    leaders: new Map<string, ReturnType<typeof Promise.withResolvers<string>>>(),
+  };
+
+  #timeouts: Record<'election' | 'leader', number | null> = {
+    election: null,
+    leader: null
   };
 
   #secretKey: CryptoKey | null = null;
@@ -49,60 +55,10 @@ export class DistributeSharedWorker extends EventTarget implements SharedWorker 
     }
   }
 
-  /** 
-   * For perf. reasons use a class to delagate event handlers,
-   * this lets us avoid binds and arrow functions which have memory overhead, 
-   * in addition since it's always the same instance of the same class,
-   * it's super easy to remove later on
-   * 
-   * Based on https://webreflection.medium.com/dom-handleevent-a-cross-platform-standard-since-year-2000-5bf17287fd38
-   */
-  static #eventhandlers = new WeakMap();
-  static #eventhandler = class PrivateEventHandler {
-    #delegated: DistributeSharedWorker;
-    constructor(delegated: DistributeSharedWorker) { 
-      this.#delegated = delegated; 
-    }
-
-    handleEvent(event: MessageEvent) { 
-      this.#delegated.#handleEvent(event); 
-    }
-  }
-
-  static #custommessagechannel = class CustomMessageChannel extends MessageChannel {
-    #delegated: DistributeSharedWorker;
-    constructor(delegated: DistributeSharedWorker) { 
-      super(); 
-      this.#delegated = delegated;
-
-      const port1 = this.port1;
-      const port2 = this.port2;
-
-      Object.assign(this.port1, {
-        async start() {
-          port1.start();
-          port2.start();
-
-          await delegated.#useSecretKey();
-          await delegated.#connect();
-        },
-        
-        close() {
-          port1.close();
-          port2.close();
-          
-          delegated.#disconnect();
-          delegated.#secretKey = null;
-        }
-      })
-    }
-  }
-
   static #generateValidationPayload() {
     try {
       structuredClone(noop);
     } catch (e) {
-      console.log({ e, stack: e.stack });
       return {
         stack: e.stack,
         name: e.name,
@@ -113,11 +69,78 @@ export class DistributeSharedWorker extends EventTarget implements SharedWorker 
     }
   }
 
+  static #custommessagechannel = class CustomMessageChannel extends MessageChannel {
+    #delegated: DistributeSharedWorker;
+    constructor(delegated: DistributeSharedWorker) {
+      super();
+      this.#delegated = delegated;
+
+      const port1 = this.port1;
+      const port2 = this.port2;
+
+      // Store original start methods to avoid recursion
+      const originalPort1Start = port1.start.bind(port1);
+      const originalPort2Start = port2.start.bind(port2);
+
+      const originalPort1Close = port1.close.bind(port1);
+      const originalPort2Close = port2.close.bind(port2);
+
+      Object.assign(this.port1, {
+        async start() {
+          const eventhandler = new DistributeSharedWorker.#eventhandler(delegated);
+          DistributeSharedWorker.#eventhandlers.set(delegated, eventhandler);
+          delegated.#broadcast.addEventListener("message", eventhandler);
+
+          originalPort1Start();
+          originalPort2Start();
+
+          await delegated.#start();
+        },
+
+        close() {
+          originalPort1Close();
+          originalPort2Close();
+
+          delegated.#disconnect();
+          delegated.#secretKey = null;
+        }
+      })
+    }
+
+    #handleEvent(evt: MessageEvent<RequestFrame<unknown>>) {
+      this.#delegated.#broadcast.postMessage(evt.data);
+    }
+  }
+  
+  /** 
+   * For perf. reasons use a class to delagate event handlers,
+   * this lets us avoid binds and arrow functions which have memory overhead, 
+   * in addition since it's always the same instance of the same class,
+   * it's super easy to remove later on
+   * 
+   * Based on https://webreflection.medium.com/dom-handleevent-a-cross-platform-standard-since-year-2000-5bf17287fd38
+   */
+  static #eventhandlers = new WeakMap();
+  static #eventhandler = class PrivateEventHandler<T extends DistributeSharedWorker> {
+    #delegated: T;
+    constructor(delegated: T) { 
+      this.#delegated = delegated; 
+    }
+
+    handleEvent(event: MessageEvent) {
+      this.#delegated.#handleEvent(event); 
+    }
+  }
+
   #messagechannel = new DistributeSharedWorker.#custommessagechannel(this);
   port = this.#messagechannel.port1;
 
   constructor(url: string | URL, opts?: WorkerOptions) {
     super();
+
+    console.log({
+      workerId: this.#id
+    })
 
     this.#url = url;
     this.#opts = opts;
@@ -128,11 +151,9 @@ export class DistributeSharedWorker extends EventTarget implements SharedWorker 
     this.#broadcast = new BroadcastChannel(this.#channelPrefix);
     this.#channel = new BroadcastChannel(this.#channelId);
 
-    const eventhandler = new DistributeSharedWorker.#eventhandler(this);
-    DistributeSharedWorker.#eventhandlers.set(this, eventhandler);
-    this.#broadcast.addEventListener("message", eventhandler);
-    
-    this.#messagechannel.port2.addEventListener("message", eventhandler);
+    const messagechanneleventhandler = new DistributeSharedWorker.#eventhandler(this.#messagechannel as unknown as DistributeSharedWorker);
+    DistributeSharedWorker.#eventhandlers.set(this.#messagechannel, messagechanneleventhandler);
+    this.#messagechannel.port2.addEventListener("message", messagechanneleventhandler);
     this.#messagechannel.port2.start();
   }
   
@@ -152,6 +173,20 @@ export class DistributeSharedWorker extends EventTarget implements SharedWorker 
     if (this.#blacklist.has(frame.from)) {
       console.log(`Message from blacklisted node ${frame.from} ignored.`);
       return;
+    }
+
+    if (--frame.ttl! <= 0) {
+      switch (type) {
+        case RequestMessage.Connect: {
+          if (frame.threadId) {
+            this.#resolvers.connections.get(frame.threadId)?.resolve?.();
+          }
+
+          break;
+        }
+      }
+
+      return; 
     }
 
     switch (type) {
@@ -188,11 +223,16 @@ export class DistributeSharedWorker extends EventTarget implements SharedWorker 
       case RequestMessage.Blacklist: {
         break;
       }
+
+      case RequestMessage.Heartbeat: {
+        break;
+      }
     }
   }
 
-  async #connect(to: string | null = null, ttl = 2) {
-    if (ttl <= 0) return;
+  async #connect(frame?: Partial<Frame> | null) {
+    const ttl = frame?.ttl ?? 2;
+    const threadId = frame?.threadId;
 
     const validationPayload = DistributeSharedWorker.#generateValidationPayload();
     const { validationHash, timestamp, uniqueId, encryptedMessage } = await createMessage(
@@ -200,31 +240,48 @@ export class DistributeSharedWorker extends EventTarget implements SharedWorker 
       await this.#useSecretKey()
     );
 
+    console.log({
+      threadId,
+      from: this.#id,
+      ttl
+    })
+    
     this.#broadcast.postMessage(request(
       RequestMessage.Connect,
       { validationPayload, encryptedMessage },
       {
-        to, from: this.#id,
+        from: this.#id,
+        threadId,
         hash: validationHash,
         id: uniqueId,
         timestamp,
-        ttl,
+        ttl
       }
     ));
-  }
 
-  async #onConnection(frame: Frame) {
-    const ttl = frame.ttl! - 1;
-    if (frame.to && frame.to !== this.#id) return;
-    if (this.#id !== frame.from) {
-      this.#neighbors.add(frame.from!);
-      await this.#connect(frame.from, ttl);
+    if (threadId) {
+      try {
+        const resolvable = Promise.withResolvers<void>();
+        this.#resolvers.connections.set(threadId, resolvable);
+        await resolvable.promise;
+      } finally {
+        this.#resolvers.connections.delete(threadId);
+      }
     }
   }
 
-  #elect(ttl = 2) {
-    if (ttl <= 0) return;
+  #onConnection(frame: Frame) {
+    if (this.#id !== frame.from) {
+      this.#neighbors.add(frame.from!);
+      this.#connect(frame);
+    }
+  }
 
+  get #isLeader() {
+    return this.#id === this.#leader;
+  }
+
+  #elect(ttl?: number) {
     this.#broadcast.postMessage(request(
       RequestMessage.Election, 
       null, 
@@ -233,32 +290,46 @@ export class DistributeSharedWorker extends EventTarget implements SharedWorker 
 
     const resolvable = Promise.withResolvers<string>();
     this.#resolvers.elections.set(this.#id, resolvable);
+
+    this.#timeouts.election = setTimeout(() => {
+      if (!this.#isLeader && !this.#leader) {
+        this.#lead(this.#id);
+      }
+    }, 10_000);
     return resolvable.promise;
+  }
+
+  #lead(leader: string, ttl?: number) {
+    this.#leader = leader;
+    this.#broadcast.postMessage(request(
+      RequestMessage.Leader,
+      { leader: this.#leader },
+      { from: this.#id, ttl }
+    ));
   }
 
   #onElection(frame: Frame) {
     if (compareIds(frame.from, this.#id) > 0) {
-      this.#leader = null;
+      this.#leader = frame.from;
+      clearTimeout(this.#timeouts.election!);
     } else if (compareIds(frame.from, this.#id) < 0) {
-      const ttl = frame.ttl! - 1;
-      this.#elect(ttl);
+      this.#elect(frame.ttl! - 1);
     }
 
-    this.#resolvers.elections.get(frame.from)?.resolve?.(frame.from);
+    if ((frame.ttl! - 1) <= 0) {
+      if (this.#leader && !this.#isLeader) {
+        this.#lead(this.#leader);
+      }
+    }
   }
 
-  #lead(data: { leader: string }, frame: Frame) {
-    this.#leader = data.leader;
-
-    if (frame.to === this.#id) {
-      this.#broadcast.postMessage(request(
-        RequestMessage.Leader,
-        { leader: this.#leader },
-        { to: this.#id, from: this.#id }
-      ))
+  #onLeadership(request: RequestFrame<{ leader: string }>) {
+    const { data, frame } = request;
+    if (data?.leader === this.#id) {
+      this.#lead(this.#id, frame.ttl! - 1);
+    } else {
+      this.#leader = this.#id;
     }
-
-    this.#resolvers.leaders.get(frame.from)?.resolve?.(frame.from);
   }
 
   #disconnect(id?: string) {
@@ -271,6 +342,33 @@ export class DistributeSharedWorker extends EventTarget implements SharedWorker 
       null,
       { from: this.#id }
     ));
+  }
+
+  async #start() {
+    console.log("Start")
+    await this.#useSecretKey();
+    await this.#connect({
+      threadId: crypto.randomUUID()
+    });
+
+    console.log("Done connecting", this.#neighbors)
+
+    // Send heartbeat to leader periodically
+    // setInterval(() => {
+    //   if (this.#leader && !this.#isLeader) {
+    //     this.#broadcast.postMessage(request(
+    //       RequestMessage.Heartbeat,
+    //       null,
+    //       { from: this.#id }
+    //     ));
+    //   }
+    // }, 5_000);
+    
+    // await this.#elect();
+
+    // const resolvable = Promise.withResolvers<string>();
+    // this.#resolvers.leaders.set(this.#id, resolvable);
+    // await resolvable.promise;
   }
 
   // Public method to handle incoming messages

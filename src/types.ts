@@ -4,6 +4,7 @@ export type Enum<T> = T[keyof T];
 export interface Frame {
   to?: string | null;
   from: string;
+  threadId?: string | null;
   hash?: EncryptedMessage['validationHash'] | null;
   timestamp?: EncryptedMessage['timestamp'] | null;
   id?: EncryptedMessage['uniqueId'] | null;

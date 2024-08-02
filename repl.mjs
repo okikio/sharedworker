@@ -122,93 +122,93 @@
 
 
 
-class BasicHandler {
-  static #eventhandlers = new WeakMap();
-  static #eventhandler = class EventHandler {
-    #delegated;
-    constructor(delegated) {
-      this.#delegated = delegated;
-    }
+// class BasicHandler {
+//   static #eventhandlers = new WeakMap();
+//   static #eventhandler = class EventHandler {
+//     #delegated;
+//     constructor(delegated) {
+//       this.#delegated = delegated;
+//     }
 
-    handleEvent(event) {
-      (this.#delegated).#handleEvent(event);
-    }
-  }
+//     handleEvent(event) {
+//       (this.#delegated).#handleEvent(event);
+//     }
+//   }
 
-  static #custommessagechannel = class CustomMessageChannel extends MessageChannel {
-    #delegated;
-    constructor(delegated) {
-      super();
-      this.#delegated = delegated;
+//   static #custommessagechannel = class CustomMessageChannel extends MessageChannel {
+//     #delegated;
+//     constructor(delegated) {
+//       super();
+//       this.#delegated = delegated;
 
-      const port1 = this.port1;
-      const port2 = this.port2;
+//       const port1 = this.port1;
+//       const port2 = this.port2;
 
-      Object.assign(this.port1, {
-        cool: "this",
-        start() {
-          port1.start();
-          port2.start();
+//       Object.assign(this.port1, {
+//         cool: "this",
+//         start() {
+//           port1.start();
+//           port2.start();
 
-          delegated.#connect();
-        },
+//           delegated.#connect();
+//         },
 
-        close() {
-          port1.close();
-          port2.close();
+//         close() {
+//           port1.close();
+//           port2.close();
 
-          delegated.#disconnect();
-        }
-      })
-    }
-  }
+//           delegated.#disconnect();
+//         }
+//       })
+//     }
+//   }
 
-  #messagechannel = new BasicHandler.#custommessagechannel(this);
-  port = this.#messagechannel.port1;
+//   #messagechannel = new BasicHandler.#custommessagechannel(this);
+//   port = this.#messagechannel.port1;
 
-  constructor(channel) {
-    this.channel = channel;
+//   constructor(channel) {
+//     this.channel = channel;
 
-    const eventhandler = new BasicHandler.#eventhandler(this);
-    BasicHandler.#eventhandlers.set(this, eventhandler);
+//     const eventhandler = new BasicHandler.#eventhandler(this);
+//     BasicHandler.#eventhandlers.set(this, eventhandler);
 
-    channel.port1.addEventListener('message', eventhandler);
-    channel.port1.start();
+//     channel.port1.addEventListener('message', eventhandler);
+//     channel.port1.start();
 
-    console.log({
-      port: this.port
-    })
-  }
+//     console.log({
+//       port: this.port
+//     })
+//   }
 
-  #handleEvent(e) {
-    this['on' + e.type](e);
-  }
+//   #handleEvent(e) {
+//     this['on' + e.type](e);
+//   }
 
-  onmessage(e) {
-    console.log(e)
-  }
+//   onmessage(e) {
+//     console.log(e)
+//   }
 
-  #connect() {
-    console.log({
-      type: "connect"
-    })
-  }
+//   #connect() {
+//     console.log({
+//       type: "connect"
+//     })
+//   }
 
-  #disconnect() {
-    console.log({
-      type: "disconnect"
-    })
-  }
-}
+//   #disconnect() {
+//     console.log({
+//       type: "disconnect"
+//     })
+//   }
+// }
 
-const channel = new MessageChannel();
-const inst = new BasicHandler(channel);
+// const channel = new MessageChannel();
+// const inst = new BasicHandler(channel);
 
-// inst.handleEvent.bind(inst)({ type: "message", currentTarget: channel.port1})
-console.log({ handleEvent: inst.handleEvent })
-channel.port2.postMessage({ type: "message" })
-channel.port2.start();
+// // inst.handleEvent.bind(inst)({ type: "message", currentTarget: channel.port1})
+// console.log({ handleEvent: inst.handleEvent })
+// channel.port2.postMessage({ type: "message" })
+// channel.port2.start();
 
-console.log({
-  port: channel.port1
-})
+// console.log({
+//   port: channel.port1
+// })
