@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
-import type { EncryptedMessage, Frame, RequestEnum, RequestFrame } from "./types.ts";
+import type { AcknowledgeData, EncryptedMessage, Frame, RequestEnum, RequestFrame } from "./types.ts";
 
-import { BROADCAST_CHANNEL_PREFIX, RequestMessage, SEPERATOR } from "./utils/const.ts";
+import { BROADCAST_CHANNEL_PREFIX, RequestMessage, SEPERATOR, DEFAULT_TTL } from "./utils/const.ts";
 import { createMessage, decryptMessage, generateValidationHash, initializeSecretKey } from "./utils/crypto.ts";
 import { compareIds, generateUniqueId } from "./utils/id.ts";
 
@@ -10,12 +10,43 @@ export function request<T>(type: RequestEnum, data: T | null = null, frame: Fram
   const uniqueId = crypto.randomUUID();
   const timestamp = Date.now();
 
-  Object.assign(frame, { uniqueId, timestamp, ttl: frame.ttl ?? 2 });
+  Object.assign(frame, { 
+    uniqueId,  timestamp, 
+    ttl: frame.ttl ?? DEFAULT_TTL,
+  });
   return { type, data, frame };
 }
 
 export function getChannelName(id: string, channelPrefix = BROADCAST_CHANNEL_PREFIX) {
   return `${channelPrefix}${SEPERATOR}${id}`
+}
+
+/**
+ * Adds a new resolver to the set and ensures it is removed once settled.
+ * @param resolvers - Set of resolvers to manage dynamically.
+ * @returns The created resolver object.
+ */
+export function addResolver(resolvers: Set<PromiseWithResolvers<void>>) {
+  const resolver = Promise.withResolvers<void>();
+  resolvers.add(resolver);
+  resolver.promise.finally(() => resolvers.delete(resolver));
+  return resolver;
+}
+
+/**
+ * Continuously monitors a set of resolvers and yields until all are settled.
+ * Can handle dynamically added resolvers.
+ * @param resolvers - Set of resolvers to monitor.
+ */
+export async function* allResolversSettled(resolvers: Set<PromiseWithResolvers<void>>) {
+  while (resolvers.size > 0) {
+    // Wait for at least one promise to resolve before proceeding.
+    await Promise.race(Array.from(resolvers).map(res => res.promise));
+
+    // Await a brief timeout to give time for new resolvers to be added or settled.
+    await new Promise(resolve => setTimeout(resolve, 10));
+    yield; // Yield control back to allow for new operations or checks.
+  }
 }
 
 export class DistributeSharedWorker extends EventTarget implements SharedWorker {
@@ -26,7 +57,7 @@ export class DistributeSharedWorker extends EventTarget implements SharedWorker 
   #channel: BroadcastChannel;
 
   #id = generateUniqueId();
-  #leader: string | null;
+  #leader: string | null = null;
 
   #worker: Worker; 
   #neighbors = new Set<string>();
@@ -37,9 +68,9 @@ export class DistributeSharedWorker extends EventTarget implements SharedWorker 
   
   // Event handlers
   #resolvers = {
-    connections: new Map<string, ReturnType<typeof Promise.withResolvers<void>>>(),
-    elections: new Map<string, ReturnType<typeof Promise.withResolvers<string>>>(),
-    leaders: new Map<string, ReturnType<typeof Promise.withResolvers<string>>>(),
+    connections: new Set<PromiseWithResolvers<void>>(),
+    elections: new Set<PromiseWithResolvers<void>>(),
+    leaders: new Set<PromiseWithResolvers<void>>(),
   };
 
   #timeouts: Record<'election' | 'leader', number | null> = {
@@ -156,6 +187,10 @@ export class DistributeSharedWorker extends EventTarget implements SharedWorker 
     this.#messagechannel.port2.addEventListener("message", messagechanneleventhandler);
     this.#messagechannel.port2.start();
   }
+
+  get #isLeader() {
+    return this.#id === this.#leader;
+  }
   
   async #useSecretKey() {
     if (this.#secretKey) return this.#secretKey;
@@ -175,21 +210,14 @@ export class DistributeSharedWorker extends EventTarget implements SharedWorker 
       return;
     }
 
-    if (--frame.ttl! <= 0) {
-      switch (type) {
-        case RequestMessage.Connect: {
-          if (frame.threadId) {
-            this.#resolvers.connections.get(frame.threadId)?.resolve?.();
-          }
-
-          break;
-        }
+    switch (type) {
+      case RequestMessage.Acknowledge: {
+        const _data = data as AcknowledgeData;
+        if (!_data.type) console.error("Missing acknowledgement type");
+        this.#onAcknowledge(_data?.type, frame);
+        break;
       }
 
-      return; 
-    }
-
-    switch (type) {
       case RequestMessage.Connect: {
         this.#onConnection(frame);
         break;
@@ -202,17 +230,7 @@ export class DistributeSharedWorker extends EventTarget implements SharedWorker 
 
       case RequestMessage.Leader: {
         const _data = data as { leader: string };
-        this.#leader = _data.leader;
-        
-        if (frame.to === this.#id) {
-          this.#broadcast.postMessage(request(
-            RequestMessage.Leader,
-            { leader: this.#leader },
-            { to: this.#id, from: this.#id }
-          ))
-        }
-
-        this.#resolvers.leaders.get(frame.from)?.resolve?.(frame.from);
+        this.#onLeadership(_data?.leader, frame);
         break;
       }
 
@@ -231,27 +249,19 @@ export class DistributeSharedWorker extends EventTarget implements SharedWorker 
   }
 
   async #connect(frame?: Partial<Frame> | null) {
-    const ttl = frame?.ttl ?? 2;
-    const threadId = frame?.threadId;
+    const ttl = frame?.ttl ?? DEFAULT_TTL;
 
     const validationPayload = DistributeSharedWorker.#generateValidationPayload();
     const { validationHash, timestamp, uniqueId, encryptedMessage } = await createMessage(
       JSON.stringify(validationPayload),
       await this.#useSecretKey()
     );
-
-    console.log({
-      threadId,
-      from: this.#id,
-      ttl
-    })
     
     this.#broadcast.postMessage(request(
       RequestMessage.Connect,
       { validationPayload, encryptedMessage },
       {
         from: this.#id,
-        threadId,
         hash: validationHash,
         id: uniqueId,
         timestamp,
@@ -259,76 +269,145 @@ export class DistributeSharedWorker extends EventTarget implements SharedWorker 
       }
     ));
 
-    if (threadId) {
-      try {
-        const resolvable = Promise.withResolvers<void>();
-        this.#resolvers.connections.set(threadId, resolvable);
-        await resolvable.promise;
-      } finally {
-        this.#resolvers.connections.delete(threadId);
-      }
-    }
+    addResolver(this.#resolvers.connections);
+
+    // Wait for all promises to settle
+    for await (const _ of allResolversSettled(this.#resolvers.connections));
   }
 
   #onConnection(frame: Frame) {
+    if (frame.ttl! <= 0) return;
     if (this.#id !== frame.from) {
+      this.#neighbors.clear();
       this.#neighbors.add(frame.from!);
-      this.#connect(frame);
+      this.#acknowledge(RequestMessage.Connect, frame);
+    }
+
+    this.#resolveRequest(RequestMessage.Connect);
+  }
+
+  #onAcknowledge(type: RequestEnum, frame: Frame) {
+    if (frame.ttl! <= 0) {
+      this.#resolveRequest(type);
+      return;
+    }
+
+    if (this.#id !== frame.from) {
+      if (type === RequestMessage.Connect) this.#neighbors.add(frame.from!);
+      this.#acknowledge(type, frame);
     }
   }
 
-  get #isLeader() {
-    return this.#id === this.#leader;
+  #acknowledge(type: RequestEnum, frame?: Partial<Frame> | null) {
+    const ttl = frame?.ttl ?? DEFAULT_TTL;
+
+    this.#broadcast.postMessage(request(
+      RequestMessage.Acknowledge,
+      { type },
+      {
+        from: this.#id,
+        ttl: ttl! - 1
+      }
+    ));
   }
 
-  #elect(ttl?: number) {
+  #resolveRequest(type: RequestEnum | null | undefined = null) {
+    switch (type) {
+      case RequestMessage.Connect: {
+        const resolvers = this.#resolvers.connections;
+        if (resolvers.size > 0) {
+          const iterator = resolvers.values();
+          iterator.next().value?.resolve();
+        }
+
+        break;
+      }
+
+      case RequestMessage.Election: {
+        const resolvers = this.#resolvers.elections;
+        if (resolvers.size > 0) {
+          console.log({ type: "resolve-election-promise", completion: this.#leader })
+          const iterator = resolvers.values();
+          iterator.next().value?.resolve();
+        }
+
+        break;
+      }
+
+      case RequestMessage.Leader: {
+        const resolvers = this.#resolvers.leaders;
+        if (resolvers.size > 0) {
+          console.log({ type: "resolve-leadership-promise", completion: this.#leader })
+          const iterator = resolvers.values();
+          iterator.next().value?.resolve();
+        }
+
+        break;
+      }
+    }
+  }
+
+  async #elect(frame?: Partial<Frame> | null) {
+    const ttl = frame?.ttl ?? DEFAULT_TTL;
+
     this.#broadcast.postMessage(request(
       RequestMessage.Election, 
       null, 
-      { from: this.#id, ttl }
-    ));
-
-    const resolvable = Promise.withResolvers<string>();
-    this.#resolvers.elections.set(this.#id, resolvable);
-
-    this.#timeouts.election = setTimeout(() => {
-      if (!this.#isLeader && !this.#leader) {
-        this.#lead(this.#id);
+      { 
+        from: this.#id,
+        ttl: ttl - 1 
       }
-    }, 10_000);
-    return resolvable.promise;
-  }
-
-  #lead(leader: string, ttl?: number) {
-    this.#leader = leader;
-    this.#broadcast.postMessage(request(
-      RequestMessage.Leader,
-      { leader: this.#leader },
-      { from: this.#id, ttl }
     ));
+
+    console.log({
+      leader: this.#leader
+    })
+
+    addResolver(this.#resolvers.elections);
+
+    // Wait for all promises to settle
+    for await (const _ of allResolversSettled(this.#resolvers.elections));
   }
 
   #onElection(frame: Frame) {
-    if (compareIds(frame.from, this.#id) > 0) {
-      this.#leader = frame.from;
-      clearTimeout(this.#timeouts.election!);
-    } else if (compareIds(frame.from, this.#id) < 0) {
-      this.#elect(frame.ttl! - 1);
-    }
+    if (frame.ttl! <= 0) return;
 
-    if ((frame.ttl! - 1) <= 0) {
-      if (this.#leader && !this.#isLeader) {
-        this.#lead(this.#leader);
+    this.#leader = this.#id;
+    for (const neighborId of this.#neighbors) {
+      if (compareIds(neighborId, this.#leader) > 0) {
+        this.#leader = neighborId;
       }
     }
+
+    this.#resolveRequest(RequestMessage.Election);
   }
 
-  #onLeadership(request: RequestFrame<{ leader: string }>) {
-    const { data, frame } = request;
-    if (data?.leader === this.#id) {
-      this.#lead(this.#id, frame.ttl! - 1);
+  #lead(frame?: Partial<Frame> | null) {
+    const ttl = frame?.ttl ?? DEFAULT_TTL;
+
+    this.#broadcast.postMessage(request(
+      RequestMessage.Leader,
+      { leader: this.#leader },
+      {
+        from: this.#id,
+        ttl: ttl - 1
+      }
+    ));
+  }
+
+  #onLeadership(leader: string | null | undefined, frame: Frame) {
+    if (frame.ttl! <= 0) return;
+
+    if (leader === this.#leader) {
+      this.#acknowledge(RequestMessage.Leader, frame);
     } else {
-      this.#leader = this.#id;
+      console.log({
+        type: "leadership-fail: start-another-election",
+        data: leader,
+        leader: this.#leader
+      })
+
+      this.#elect(frame);
     }
   }
 
@@ -345,13 +424,12 @@ export class DistributeSharedWorker extends EventTarget implements SharedWorker 
   }
 
   async #start() {
-    console.log("Start")
     await this.#useSecretKey();
-    await this.#connect({
-      threadId: crypto.randomUUID()
-    });
 
-    console.log("Done connecting", this.#neighbors)
+    const threadId = crypto.randomUUID();
+    console.log({ broadcastThreadId: threadId })
+    await this.#connect();
+    console.log("Done connection", this.#neighbors)
 
     // Send heartbeat to leader periodically
     // setInterval(() => {
@@ -364,7 +442,9 @@ export class DistributeSharedWorker extends EventTarget implements SharedWorker 
     //   }
     // }, 5_000);
     
-    // await this.#elect();
+    await this.#elect();
+
+    console.log("Done election", this.#leader)
 
     // const resolvable = Promise.withResolvers<string>();
     // this.#resolvers.leaders.set(this.#id, resolvable);

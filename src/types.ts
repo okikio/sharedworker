@@ -4,7 +4,6 @@ export type Enum<T> = T[keyof T];
 export interface Frame {
   to?: string | null;
   from: string;
-  threadId?: string | null;
   hash?: EncryptedMessage['validationHash'] | null;
   timestamp?: EncryptedMessage['timestamp'] | null;
   id?: EncryptedMessage['uniqueId'] | null;
@@ -12,7 +11,7 @@ export interface Frame {
 }
 
 export interface RequestFrame<T> {
-  type: Enum<typeof RequestMessage>;
+  type: RequestEnum;
   data: T | null,
   frame: Frame
 }
@@ -24,4 +23,8 @@ export interface EncryptedMessage {
   timestamp: number;
   validationHash: string;
   encryptedMessage: string;
+}
+
+export interface AcknowledgeData {
+  type: RequestEnum;
 }

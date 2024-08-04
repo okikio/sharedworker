@@ -118,8 +118,7 @@
     "worker",
     "web",
     "polyfill",
-    "ponyfill",
-    "es2022"
+    "ponyfill"
   ],
   "author": {
     "name": "Okiki Ojo",
@@ -134,13 +133,13 @@
   "devDependencies": {
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
-    "@types/web": "^0.0.152",
-    "astro": "^4.13.0",
+    "@types/web": "^0.0.153",
+    "astro": "^4.13.1",
     "bun": "^1.1.21",
     "husky": "^9.1.4",
     "pnpm": "^9.6.0",
     "semantic-release": "^24.0.0",
-    "tsup": "^8.2.3",
+    "tsup": "^8.2.4",
     "tsx": "^4.16.5",
     "typescript": "^5.5.4"
   },
