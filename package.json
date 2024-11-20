@@ -74,7 +74,7 @@
     "build": "tsup",
     "commitlint": "commitlint --edit",
     "pre-release": "pnpm build && pnpm typedoc",
-    "prepare": "[ \"$NODE_ENV\" = \"production\" ] || [ -n \"$CI\" ] && echo \"Skipping Husky Install...\" || husky install",
+    "prepare": "[ \"$NODE_ENV\" = \"production\" ] || [ -n \"$CI\" ] && echo \"Skipping Husky Install...\" || husky",
     "semantic-release": "semantic-release"
   },
   "release": {
