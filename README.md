@@ -53,7 +53,23 @@ You can also use it via a CDN, e.g.
 import SharedWorker from "https://cdn.skypack.dev/@okikio/sharedworker";
 // or 
 import SharedWorker from "https://cdn.jsdelivr.net/npm/@okikio/sharedworker";
+// or
+import SharedWorker from "https://esm.sh/@okikio/sharedworker";
 // or any number of other CDN's
+```
+
+For vite and other bundlers you can also use the new `SharedWorkerPonyfill` like so ([#9](https://github.com/okikio/sharedworker/issues/9)), to address one-off issues with workers
+
+```ts
+import { SharedWorkerPonyfill, SharedWorkerSupported } from "@okikio/sharedworker";
+
+let worker: SharedWorkerPonyfill;
+
+if (SharedWorkerSupported) {
+    worker = new SharedWorkerPonyfill(new SharedWorker(new URL("./../worker.ts", import.meta.url), { name: "position-sync", type: "module" }));
+} else {
+    worker = new SharedWorkerPonyfill(new Worker(new URL("./../worker.ts", import.meta.url), { name: "position-sync", type: "module" }));
+}
 ```
 
 `@okikio/sharedworker` supports the same API surfaces as `SharedWorker` and `Worker`, except it adds some none spec. compliant properties and methods to the `SharedWorkerPolyfill` class, that enables devs to use `SharedWorker`'s on browsers that don't support it.

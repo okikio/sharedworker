@@ -8,7 +8,7 @@ const GLOBAL_NAME = umd;
 
 const baseConfig: Options = {
   target: ["es2022", "node21", "chrome105"],
-  entry: ['src/index.ts'],
+  entry: ['src/index.ts', 'src/polyfill.ts', 'src/ponyfill.ts', 'src/constants.ts'],
   format: ["esm", "cjs"],
   sourcemap: true,
   clean: true,
@@ -31,7 +31,15 @@ export default defineConfig([
   {
     ...baseConfig,
     target: 'es5',
-    format: ['umd'],
+    format: ['cjs'],
+
+    outExtension({ format, options }) {
+      const ext = "umd.js"
+      const outputExtension = options.minify ? `min.${ext}` : `${ext}`
+      return {
+        js: `.${outputExtension}`,
+      }
+    },
     esbuildPlugins: [umdWrapper({ libraryName: GLOBAL_NAME, external: 'inherit' })],
   },
 ])

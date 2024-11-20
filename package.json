@@ -21,6 +21,36 @@
         "default": "./lib/index.js"
       }
     },
+    "./polyfill": {
+      "require": {
+        "types": "./lib/polyfill.d.cts",
+        "default": "./lib/polyfill.cjs"
+      },
+      "import": {
+        "types": "./lib/polyfill.d.ts",
+        "default": "./lib/polyfill.js"
+      }
+    },
+    "./ponyfill": {
+      "require": {
+        "types": "./lib/ponyfill.d.cts",
+        "default": "./lib/ponyfill.cjs"
+      },
+      "import": {
+        "types": "./lib/ponyfill.d.ts",
+        "default": "./lib/ponyfill.js"
+      }
+    },
+    "./constants": {
+      "require": {
+        "types": "./lib/constants.d.cts",
+        "default": "./lib/constants.cjs"
+      },
+      "import": {
+        "types": "./lib/constants.d.ts",
+        "default": "./lib/constants.js"
+      }
+    },
     "./lib/*": "./lib/*",
     "./src/*": "./src/*",
     "./package.json": "./package.json"
@@ -108,28 +138,29 @@
   },
   "homepage": "https://sharedworker.okikio.dev",
   "devDependencies": {
-    "@commitlint/cli": "^18.4.3",
-    "@commitlint/config-conventional": "^18.4.3",
+    "@commitlint/cli": "^19.6.0",
+    "@commitlint/config-conventional": "^19.6.0",
     "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/commit-analyzer": "^11.1.0",
+    "@semantic-release/commit-analyzer": "^13.0.0",
     "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^9.2.5",
-    "@semantic-release/npm": "^11.0.2",
-    "@semantic-release/release-notes-generator": "^12.1.0",
-    "@types/node": "^20.10.4",
-    "@types/web": "^0.0.127",
-    "esbuild": "^0.19.9",
-    "esbuild-plugin-umd-wrapper": "^2.0.0",
-    "husky": "^8.0.3",
-    "pnpm": "^8.12.0",
-    "semantic-release": "^22.0.12",
-    "tsup": "^8.0.1",
-    "typedoc": "^0.25.4",
-    "typedoc-plugin-extras": "^3.0.0",
-    "typedoc-plugin-inline-sources": "^1.0.1",
-    "typedoc-plugin-mdn-links": "^3.1.7",
-    "typedoc-plugin-missing-exports": "^2.1.0",
-    "typescript": "^5.3.3",
-    "vite": "^5.0.8"
+    "@semantic-release/github": "^11.0.1",
+    "@semantic-release/npm": "^12.0.1",
+    "@semantic-release/release-notes-generator": "^14.0.1",
+    "@swc/core": "^1.9.2",
+    "@types/node": "^22.9.1",
+    "@types/web": "^0.0.180",
+    "esbuild": "^0.24.0",
+    "esbuild-plugin-umd-wrapper": "^3.0.0",
+    "husky": "^9.1.7",
+    "pnpm": "^9.14.1",
+    "semantic-release": "^24.2.0",
+    "tsup": "^8.3.5",
+    "typedoc": "^0.26.11",
+    "typedoc-plugin-extras": "^3.1.0",
+    "typedoc-plugin-inline-sources": "^1.1.0",
+    "typedoc-plugin-mdn-links": "^3.3.8",
+    "typedoc-plugin-missing-exports": "^3.0.2",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
   }
 }
