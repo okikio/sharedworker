@@ -67,7 +67,7 @@
     "provenance": true
   },
   "scripts": {
-    "typedoc": "esbuild ./.typedoc/typedoc.tsx --format=cjs --outfile=./.typedoc/typedoc.cjs && typedoc --options ./.typedoc/typedoc.json",
+    "typedoc": "esbuild ./.typedoc/typedoc.tsx --format=esm --outfile=./.typedoc/typedoc.mjs && typedoc --options ./.typedoc/typedoc.json",
     "vite": "vite --config vite.config.ts",
     "dev": "vite dev --config vite.config.ts",
     "start": "vite dev --config vite.config.ts",

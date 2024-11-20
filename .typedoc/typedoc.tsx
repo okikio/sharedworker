@@ -4,20 +4,6 @@ import { Application, ParameterType, JSX } from "typedoc";
 
 export function load(app: Application) {
   app.options.addDeclaration({
-    name: "umami-id",
-    help: "The id you receive from umami analytics.",
-    type: ParameterType.String, // The default
-    defaultValue: "", // The default
-  });
-
-  app.options.addDeclaration({
-    name: "umami-src",
-    help: "The website source for umami analytics.",
-    type: ParameterType.String, // The default
-    defaultValue: "/media/measure.js", // The default
-  });
-
-  app.options.addDeclaration({
     name: "keywords",
     type: ParameterType.Array,
     help: "Website keywords",
@@ -33,8 +19,6 @@ export function load(app: Application) {
 
   app.renderer.hooks.on("head.begin", (ctx) => {
     const keywords = ctx.options.getValue("keywords") as string[];
-    const id = ctx.options.getValue("umami-id") as string;
-    const src = ctx.options.getValue("umami-src") as string;
 
     return (
       <>
@@ -51,7 +35,7 @@ export function load(app: Application) {
         <link
           rel="icon"
           type="image/svg+xml"
-          href="/media/assets/favicon.svg"
+          href="./media/assets/favicon.svg"
         />
 
         <meta name="web-author" content="Okiki Ojo" />
@@ -74,18 +58,6 @@ export function load(app: Application) {
           rel="pingback"
           href="https://webmention.io/webmention?forward=https://sharedworker.okikio.dev/endpoint"
         />
-
-        {ctx.options.isSet("umami-id") && (
-          <script
-            async
-            defer
-            type="module"
-            data-host-url="https://bundlejs.com"
-            data-domains="sharedworker.okikio.dev,okikio.dev"
-            data-website-id={id}
-            src={src}
-          ></script>
-        )}
       </>
     );
   });

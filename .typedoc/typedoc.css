@@ -3,8 +3,8 @@
 @font-face {
   font-family: "FluentSystemIcons-Regular";
   src: 
-    url("/media/fonts/FluentSystemIcons-Regular.woff2") format("woff2"),
-    url("/media/fonts/FluentSystemIcons-Regular.ttf") format("truetype");
+    url("./media/fonts/FluentSystemIcons-Regular.woff2") format("woff2"),
+    url("./media/fonts/FluentSystemIcons-Regular.ttf") format("truetype");
 }
 
 :root {
