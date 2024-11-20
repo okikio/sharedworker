@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/okikio/sharedworker/compare/v1.0.7...v1.1.0) (2024-11-20)
+
+
+### Bug Fixes
+
+* fix broken typedoc ([e850d55](https://github.com/okikio/sharedworker/commit/e850d55f81b5fe4a58d03712e79acb102cec550b))
+
+
+### Features
+
+* add SharedPonyfill class to address [#9](https://github.com/okikio/sharedworker/issues/9) ([2a7a143](https://github.com/okikio/sharedworker/commit/2a7a14347de8cf5a663f7d512acf77c0f6d90cb5))
+
 ## [1.0.7](https://github.com/okikio/sharedworker/compare/v1.0.6...v1.0.7) (2024-2-1)
 
 

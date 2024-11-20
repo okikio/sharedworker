@@ -1,6 +1,6 @@
 {
   "name": "@okikio/sharedworker",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "type": "module",
   "sideEffects": false,
   "description": "A small mostly spec. compliant polyfill/ponyfill for SharedWorkers, it acts as a drop in replacement for normal Workers, and supports an API surface that matches normal Workers.",
