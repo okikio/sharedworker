@@ -28,9 +28,9 @@ When a change affects TypeScript declarations or public option shapes, also insp
 
 ### What CI validates
 
-`.github/workflows/validate.yml` runs for every pull request targeting `main`. Pushes to `main` use path filtering so documentation-only merges do not repeat package validation unnecessarily. The workflow:
+`.github/workflows/validate.yml` runs for every pull request targeting `main`. Pushes to `main` use path filtering so documentation-only merges do not repeat package validation unnecessarily. Workflow/configuration changes are included in that filter. The workflow:
 
-1. installs the repository's pnpm version;
+1. installs the repository's pinned pnpm version;
 2. uses the Node version in `.nvmrc`;
 3. installs with `--frozen-lockfile`;
 4. builds the package;
@@ -83,6 +83,10 @@ docs: explain worker lifecycle recovery
 ```
 
 `semantic-release` owns version analysis, changelog generation, npm publication, GitHub release metadata, and the release commit on `main` according to `package.json`.
+
+The `Release` workflow is manual and accepts releases only from `main`. It uses a single release concurrency group, the pinned Node/pnpm toolchain, a frozen lockfile install, `pnpm pre-release`, and the runtime test suite before `pnpm semantic-release` runs. Do not bypass those checks for a manual publication.
+
+The workflow retains the existing `NPM_TOKEN` authentication path and `id-token: write` permission used for npm publication/provenance. Changing the repository to npm trusted publishing or another authentication model should be a separate, deliberate migration so the current registry setup is not silently broken.
 
 This repository does not use Changesets as its release source of truth. Do not add a `.changeset` file only because an organization-level bot comments on a pull request. A release-system migration should be an explicit repository change that replaces or integrates with the existing semantic-release configuration.
 
