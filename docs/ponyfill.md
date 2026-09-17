@@ -69,12 +69,12 @@ const start = (port: MessagePort | DedicatedWorkerGlobalScope) => {
   if ("start" in port) port.start();
 };
 
-(self as SharedWorkerGlobalScope).onconnect = (event) => {
-  const [port] = event.ports;
-  start(port);
-};
-
-if (!("SharedWorkerGlobalScope" in self)) {
+if ("SharedWorkerGlobalScope" in self) {
+  (self as SharedWorkerGlobalScope).onconnect = (event) => {
+    const [port] = event.ports;
+    start(port);
+  };
+} else {
   start(self as DedicatedWorkerGlobalScope);
 }
 ```
