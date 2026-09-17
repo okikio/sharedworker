@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - '.github/workflows/validate.yml'
+      - '.github/workflows/**'
       - '.nvmrc'
       - '.typedoc/**'
       - 'media/**'
