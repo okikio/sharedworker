@@ -71,9 +71,10 @@
     "vite": "vite --config vite.config.ts",
     "dev": "vite dev --config vite.config.ts",
     "start": "vite dev --config vite.config.ts",
+    "typecheck": "tsc --project tsconfig.test.json",
     "build": "tsup",
     "commitlint": "commitlint --edit",
-    "pre-release": "pnpm build && pnpm typedoc",
+    "pre-release": "pnpm typecheck && pnpm build && pnpm typedoc",
     "prepare": "[ \"$NODE_ENV\" = \"production\" ] || [ -n \"$CI\" ] && echo \"Skipping Husky Install...\" || husky",
     "semantic-release": "semantic-release"
   },
