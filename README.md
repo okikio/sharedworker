@@ -124,14 +124,9 @@ Check out the [API site](https://sharedworker.okikio.dev) for detailed API docum
 
 ## Browser Support
 
-| Chrome | Edge | Firefox | Safari | IE  |
-| ------ | ---- | ------- | ------ | --- |
-| 4+     | 12+  | 4+      | 4+     | 10+ |
+Browser support changes independently for `SharedWorker`, dedicated `Worker`, and individual worker features. Check the current [SharedWorker compatibility data on MDN](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker#browser_compatibility) and [Worker compatibility data](https://developer.mozilla.org/en-US/docs/Web/API/Worker#browser_compatibility) for the runtimes you target.
 
-Native support for `SharedWorker` is not supported at all on Safari and IE, as well as all mobile browsers (excluding Firefox For Android).
-
-> _**Note:** some features of `Workers` appeared at later versions of the spec., so, I suggest looking into the feature support table for [Workers](https://developer.mozilla.org/en-US/docs/Web/API/Worker#browser_compatibility) and [SharedWorkers](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker#browser_compatibility)._ 
-
+The package can fall back to a dedicated worker when the base `SharedWorker` constructor is absent, but that fallback does not reproduce native cross-document shared memory or shared-worker lifetime semantics. Design required coordination and persistence around the weaker fallback guarantee.
 
 ## Contributing
 
