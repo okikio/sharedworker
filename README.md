@@ -90,7 +90,7 @@ const worker = new SharedWorker("./worker.js", options);
 
 `extendedLifetime` is a native `SharedWorker` capability. `@okikio/sharedworker` forwards the option when the browser supports shared workers, but the dedicated `Worker` fallback cannot reproduce the lifetime guarantee. Browsers that do not implement the option ignore it, so code that requires post-unload work must not treat the option as a portable guarantee.
 
-Use `extendedLifetime` to reduce avoidable interruption, not as the correctness mechanism for important work. For BFCache behavior, `visibilitychange`/`pagehide`/`pageshow`, checkpointing, reconnect handshakes, idempotent retries, and guidance on when a service worker or server-side job is the better fit, see [Worker lifetime, navigation, and recovery](./docs/lifecycle.md).
+Use `extendedLifetime` to reduce avoidable interruption, not as the correctness mechanism for important work. For BFCache behavior, `visibilitychange`/`pagehide`/`pageshow`, checkpointing, reconnect handshakes, idempotent retries, and guidance on when a service worker or server-side job is the better fit, see [Worker lifetime, navigation, and recovery](https://github.com/okikio/sharedworker/blob/main/docs/lifecycle.md).
 
 When you use `SharedWorkerPonyfill`, the same exported `SharedWorkerOptions` type can describe the options passed to a native `SharedWorker` constructor before wrapping it.
 
