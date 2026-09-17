@@ -17,6 +17,8 @@ const isSharedWorker = (worker: SharedWorker | Worker): worker is SharedWorker =
  * are routed through its `MessagePort`; dedicated-worker operations are routed
  * directly to the `Worker`. Explicit `close()` or `terminate()` calls affect
  * the supplied worker connection according to its native lifecycle semantics.
+ *
+ * @see https://github.com/okikio/sharedworker/blob/main/docs/ponyfill.md
  */
 export class SharedWorkerPonyfill implements SharedWorker, EventTarget, AbstractWorker {
   /** The concrete worker supplied by the caller. */
