@@ -90,6 +90,8 @@ const worker = new SharedWorker("./worker.js", options);
 
 `extendedLifetime` is a native `SharedWorker` capability. `@okikio/sharedworker` forwards the option when the browser supports shared workers, but the dedicated `Worker` fallback cannot reproduce the lifetime guarantee. Browsers that do not implement the option ignore it, so code that requires post-unload work must not treat the option as a portable guarantee.
 
+Use `extendedLifetime` to reduce avoidable interruption, not as the correctness mechanism for important work. For BFCache behavior, `visibilitychange`/`pagehide`/`pageshow`, checkpointing, reconnect handshakes, idempotent retries, and guidance on when a service worker or server-side job is the better fit, see [Worker lifetime, navigation, and recovery](./docs/lifecycle.md).
+
 When you use `SharedWorkerPonyfill`, the same exported `SharedWorkerOptions` type can describe the options passed to a native `SharedWorker` constructor before wrapping it.
 
 `@okikio/sharedworker` supports the same API surfaces as `SharedWorker` and `Worker`, except it adds some none spec. compliant properties and methods to the `SharedWorkerPolyfill` class, that enables devs to use `SharedWorker`'s on browsers that don't support it.
@@ -136,7 +138,7 @@ The API of `@okikio/sharedworker` closely match the web `SharedWorker` API, exce
 
 > _**Note:** the normal functionality of the methods and properties that are normally available on `SharedWorker.prototype` will still be kept intact, in `@okikio/sharedworker`._ 
 
-In addition, the `terminate()` method was added to `@okikio/sharedworker`, this allows both the `close()` method (this is from `SharedWorker.prototype.port`) and the `terminate()` method to manually close workers. 
+The package also exposes `close()` and `terminate()` as convenience methods. Their native effects differ by worker type: for a native `SharedWorker`, they close the current document's `MessagePort`; for the dedicated-worker fallback, they call `Worker.terminate()`. Closing one shared-worker port does not forcibly terminate the shared worker for other connected documents.
 
 Check out the [API site](https://sharedworker.okikio.dev) for detailed API documentation.
 
