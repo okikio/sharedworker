@@ -14,6 +14,7 @@ import { SharedWorkerPonyfill } from "./ponyfill.ts";
  * ignore it.
  *
  * @see https://html.spec.whatwg.org/multipage/workers.html#dom-sharedworkeroptions-extendedlifetime
+ * @see https://github.com/okikio/sharedworker/blob/main/docs/lifecycle.md
  */
 export interface SharedWorkerOptions extends WorkerOptions {
   /**
@@ -30,6 +31,10 @@ export interface SharedWorkerOptions extends WorkerOptions {
  * Shared-worker-only behavior is forwarded to the native constructor. The
  * fallback preserves this package's messaging API, but it cannot reproduce
  * lifecycle semantics such as {@link SharedWorkerOptions.extendedLifetime}.
+ * Applications that depend on page restoration or restart-safe state should use
+ * the lifecycle workflow documented in the package guide.
+ *
+ * @see https://github.com/okikio/sharedworker/blob/main/docs/lifecycle.md
  */
 export class SharedWorkerPolyfill extends SharedWorkerPonyfill {
   constructor(url: string | URL, opts?: SharedWorkerOptions) {
