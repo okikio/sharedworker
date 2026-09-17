@@ -1,11 +1,27 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-// Reproduce the regression condition: the runtime has native SharedWorker
-// support, but the caller deliberately wraps a dedicated Worker.
-globalThis.SharedWorker = class SharedWorker {};
+// Reproduce the regression condition while keeping the process global isolated:
+// native SharedWorker support exists when the package is evaluated, but the
+// caller can still deliberately wrap a dedicated Worker.
+const sharedWorkerDescriptor = Object.getOwnPropertyDescriptor(globalThis, "SharedWorker");
+let SharedWorkerPonyfill;
 
-const { SharedWorkerPonyfill } = await import("../lib/ponyfill.js");
+try {
+  Object.defineProperty(globalThis, "SharedWorker", {
+    configurable: true,
+    writable: true,
+    value: class SharedWorker {},
+  });
+
+  ({ SharedWorkerPonyfill } = await import("../lib/ponyfill.js"));
+} finally {
+  if (sharedWorkerDescriptor) {
+    Object.defineProperty(globalThis, "SharedWorker", sharedWorkerDescriptor);
+  } else {
+    delete globalThis.SharedWorker;
+  }
+}
 
 /** Creates a dedicated-worker test double and records calls made through it. */
 const createDedicatedWorker = () => {
