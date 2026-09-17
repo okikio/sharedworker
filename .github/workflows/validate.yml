@@ -1,29 +1,40 @@
-name: Release
+name: Validate
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+      - '.nvmrc'
+      - '.typedoc/**'
+      - 'media/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'src/**'
+      - 'tests/**'
+      - 'tsconfig*.json'
+      - 'tsup.config.ts'
+      - 'vite-env.d.ts'
+      - 'vite.config.ts'
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
-  group: release-main
-  cancel-in-progress: false
+  group: validate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  release:
-    name: Release
-    if: github.ref == 'refs/heads/main'
+  validate:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      issues: write
-      pull-requests: write
-      id-token: write
+      contents: read
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
-          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6.1.0
@@ -37,19 +48,15 @@ jobs:
           node-version-file: '.nvmrc'
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Validate release build
-        run: pnpm pre-release
+      - name: Build package
+        run: pnpm build
 
       - name: Run runtime tests
         run: node --test tests/*.test.mjs
 
-      - name: Release
-        run: pnpm semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Generate API docs
+        run: pnpm typedoc

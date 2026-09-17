@@ -58,7 +58,7 @@ import SharedWorker from "https://esm.sh/@okikio/sharedworker";
 // or any number of other CDN's
 ```
 
-For vite and other bundlers you can also use the new `SharedWorkerPonyfill` like so ([#9](https://github.com/okikio/sharedworker/issues/9)), to address one-off issues with workers
+For Vite and other bundlers you can also use the `SharedWorkerPonyfill` like so ([#9](https://github.com/okikio/sharedworker/issues/9)), to address one-off issues with workers:
 
 ```ts
 import { SharedWorkerPonyfill, SharedWorkerSupported } from "@okikio/sharedworker";
@@ -71,6 +71,8 @@ if (SharedWorkerSupported) {
     worker = new SharedWorkerPonyfill(new Worker(new URL("./../worker.ts", import.meta.url), { name: "position-sync", type: "module" }));
 }
 ```
+
+See [Using `SharedWorkerPonyfill`](https://github.com/okikio/sharedworker/blob/main/docs/ponyfill.md) for the native-versus-fallback behavior, Vite worker-discovery constraints, cleanup semantics, shared-state limitations, and restart/reconnect patterns.
 
 `@okikio/sharedworker` supports the same API surfaces as `SharedWorker` and `Worker`, except it adds some none spec. compliant properties and methods to the `SharedWorkerPolyfill` class, that enables devs to use `SharedWorker`'s on browsers that don't support it.
 
@@ -116,44 +118,19 @@ The API of `@okikio/sharedworker` closely match the web `SharedWorker` API, exce
 
 > _**Note:** the normal functionality of the methods and properties that are normally available on `SharedWorker.prototype` will still be kept intact, in `@okikio/sharedworker`._ 
 
-In addition, the `terminate()` method was added to `@okikio/sharedworker`, this allows both the `close()` method (this is from `SharedWorker.prototype.port`) and the `terminate()` method to manually close workers. 
+The package adds `close()` and `terminate()` convenience methods. For a native `SharedWorker`, both close the current document's `MessagePort`; they do not forcibly terminate the shared worker for other connected documents. For the dedicated-worker fallback, they call `Worker.terminate()`.
 
 Check out the [API site](https://sharedworker.okikio.dev) for detailed API documentation.
 
 ## Browser Support
 
-| Chrome | Edge | Firefox | Safari | IE  |
-| ------ | ---- | ------- | ------ | --- |
-| 4+     | 12+  | 4+      | 4+     | 10+ |
+Browser support changes independently for `SharedWorker`, dedicated `Worker`, and individual worker features. Check the current [SharedWorker compatibility data on MDN](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker#browser_compatibility) and [Worker compatibility data](https://developer.mozilla.org/en-US/docs/Web/API/Worker#browser_compatibility) for the runtimes you target.
 
-Native support for `SharedWorker` is not supported at all on Safari and IE, as well as all mobile browsers (excluding Firefox For Android).
-
-> _**Note:** some features of `Workers` appeared at later versions of the spec., so, I suggest looking into the feature support table for [Workers](https://developer.mozilla.org/en-US/docs/Web/API/Worker#browser_compatibility) and [SharedWorkers](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker#browser_compatibility)._ 
-
+The package can fall back to a dedicated worker when the base `SharedWorker` constructor is absent, but that fallback does not reproduce native cross-document shared memory or shared-worker lifetime semantics. Design required coordination and persistence around the weaker fallback guarantee.
 
 ## Contributing
 
-I encourage you to use [pnpm](https://pnpm.io/configuring) to contribute to this repo, but you can also use [yarn](https://classic.yarnpkg.com/lang/en/) or [npm](https://npmjs.com) if you prefer.
-
-Install all necessary packages
-```bash
-npm install
-```
-
-Then run tests (WIP)
-```bash
-npm test
-```
-
-Build project 
-```bash
-npm run build
-```
-
-Preview API Docs
-```bash
-npm run typedoc && npm run preview
-```
+See [CONTRIBUTING.md](https://github.com/okikio/sharedworker/blob/main/CONTRIBUTING.md) for the repository-native setup, validation, review, and release workflow.
 
 > _**Note**: this project uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) standard for commits, so, please format your commits using the rules it sets out._
 
