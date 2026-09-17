@@ -8,20 +8,33 @@ Use `SharedWorkerPolyfill` when you want the package to choose between `SharedWo
 
 ## Explicit construction
 
-Bundlers such as Vite can need to see the `Worker` or `SharedWorker` constructor directly so they can discover and transform the worker entry point. In that case, construct the resource first and then wrap it:
+Bundlers such as Vite need to see the worker constructor in a statically analyzable form. For Vite specifically, keep `new URL(...)` directly inside the `new Worker(...)` or `new SharedWorker(...)` expression, and keep constructor options static.
 
 ```ts
 import { SharedWorkerPonyfill, SharedWorkerSupported } from "@okikio/sharedworker";
 
-const url = new URL("./worker.ts", import.meta.url);
-const options = { name: "position-sync", type: "module" } as const;
-
 const actualWorker = SharedWorkerSupported
-  ? new SharedWorker(url, options)
-  : new Worker(url, options);
+  ? new SharedWorker(new URL("./worker.ts", import.meta.url), {
+      name: "position-sync",
+      type: "module",
+    })
+  : new Worker(new URL("./worker.ts", import.meta.url), {
+      name: "position-sync",
+      type: "module",
+    });
 
 const worker = new SharedWorkerPonyfill(actualWorker);
 ```
+
+Avoid pulling the URL or options into runtime variables when your bundler relies on static worker discovery. For example, this shape can stop Vite from recognizing the worker entry point:
+
+```ts
+const url = new URL("./worker.ts", import.meta.url);
+const options = { type: "module" };
+const actualWorker = new Worker(url, options);
+```
+
+Vite also supports `?worker` and `?sharedworker` imports. Those can be useful when they better match the application build, but the constructor form above stays closest to the web platform and is the recommended Vite form.
 
 The ponyfill routes operations from the worker that you actually pass in. A browser may support `SharedWorker` while your application deliberately injects a dedicated `Worker`; the global feature-detection result must not override that explicit choice.
 
@@ -56,7 +69,7 @@ const start = (port: MessagePort | DedicatedWorkerGlobalScope) => {
   if ("start" in port) port.start();
 };
 
-self.onconnect = (event: MessageEvent) => {
+(self as SharedWorkerGlobalScope).onconnect = (event) => {
   const [port] = event.ports;
   start(port);
 };
@@ -88,7 +101,7 @@ This also makes page restoration, worker restarts, and retry logic easier to rea
 
 The ponyfill does not take ownership merely because a worker is passed to its constructor. Your application decides when to call `close()` or `terminate()`.
 
-Be especially careful around page lifecycle events. Closing a connection during every `pagehide` event can be wrong when the document is entering the back/forward cache and may be restored. If you need lifecycle-aware persistence and reconnection, see the worker-lifecycle guidance shipped with the `extendedLifetime` support.
+Be especially careful around page lifecycle events. Closing a connection during every `pagehide` event can be wrong when the document is entering the back/forward cache and may be restored. If you need lifecycle-aware persistence and reconnection, use a checkpoint/reconnect workflow rather than treating cleanup as a one-way unload hook.
 
 ## Troubleshooting
 
@@ -108,12 +121,21 @@ On a native shared worker it is the real `MessagePort`. On the dedicated-worker 
 
 That is native shared-worker behavior. This package closes that tab's connection; other clients may still own the same shared worker.
 
-### A bundler does not discover the worker entry point
+### Vite does not discover the worker entry point
 
-Construct `Worker` or `SharedWorker` in application code with `new URL("./worker.ts", import.meta.url)`, then pass the resulting resource into `SharedWorkerPonyfill`. This keeps worker construction visible to the bundler while retaining the common facade.
+Keep the worker construction statically analyzable:
+
+```ts
+const worker = new Worker(new URL("./worker.ts", import.meta.url), {
+  type: "module",
+});
+```
+
+Do not move `new URL(...)` out of the constructor when you rely on Vite's constructor-based worker detection. Keep worker options literal/static as well. If that shape does not fit your application, use Vite's `?worker` or `?sharedworker` import form instead.
 
 ## Related platform documentation
 
+- [Vite: Web Workers](https://vite.dev/guide/features#web-workers)
 - [MDN: SharedWorker](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker)
 - [MDN: Worker](https://developer.mozilla.org/en-US/docs/Web/API/Worker)
 - [HTML Standard: Web workers](https://html.spec.whatwg.org/multipage/workers.html)
