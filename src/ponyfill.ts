@@ -11,12 +11,15 @@
 const isSharedWorker = (worker: SharedWorker | Worker): worker is SharedWorker => "port" in worker;
 
 /**
- * A polyfill class for `SharedWorker`, it accepts a URL/string as well as any other options the spec. allows for `SharedWorker`. It supports all the same methods and properties as the original, except it adds compatibility methods and properties for older browsers that don't support `SharedWorker`, so, it can switch to normal `Workers` instead.
+ * Adapts an existing `SharedWorker` or dedicated `Worker` to one facade.
+ *
+ * The caller creates and selects the worker. Shared-worker message operations
+ * are routed through its `MessagePort`; dedicated-worker operations are routed
+ * directly to the `Worker`. Explicit `close()` or `terminate()` calls affect
+ * the supplied worker connection according to its native lifecycle semantics.
  */
 export class SharedWorkerPonyfill implements SharedWorker, EventTarget, AbstractWorker {
-  /**
-   * The actual worker that is used, depending on browser support it can be either a `SharedWorker` or a normal `Worker`.
-   */
+  /** The concrete worker supplied by the caller. */
   public ActualWorker: SharedWorker | Worker;
   constructor(worker: SharedWorker | Worker) {
     this.ActualWorker = worker;
@@ -81,7 +84,11 @@ export class SharedWorkerPonyfill implements SharedWorker, EventTarget, Abstract
   }
 
   /**
-   * Immediately terminates the worker. This does not let worker finish its operations; it is halted at once. ServiceWorker instances do not support this method.
+   * Ends this facade's worker connection.
+   *
+   * For a native `SharedWorker`, this closes the current `MessagePort`; it does
+   * not forcibly terminate the shared worker for other connected documents. For
+   * a dedicated `Worker`, this calls `Worker.terminate()` and stops that worker.
    */
   public terminate() {
     if (isSharedWorker(this.ActualWorker)) {
@@ -92,14 +99,17 @@ export class SharedWorkerPonyfill implements SharedWorker, EventTarget, Abstract
   }
 
   /**
-   * Disconnects the port, so it is no longer active.
+   * Alias for {@link terminate}. Shared workers close their current port while
+   * dedicated workers are terminated.
    */
   public close() {
     return this.terminate();
   }
 
   /**
-   * Returns a MessagePort object used to communicate with and control the shared worker.
+   * Returns the native `MessagePort` for a shared worker. For the dedicated
+   * worker fallback, the `Worker` itself is exposed through this compatibility
+   * property and should not be assumed to have MessagePort-only semantics.
    */
   public get port() {
     return (isSharedWorker(this.ActualWorker) ? this.ActualWorker.port : this.ActualWorker) as MessagePort;
