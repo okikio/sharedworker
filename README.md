@@ -72,7 +72,7 @@ if (SharedWorkerSupported) {
 }
 ```
 
-See [Using `SharedWorkerPonyfill`](./docs/ponyfill.md) for the native-versus-fallback behavior, Vite worker-discovery constraints, cleanup semantics, shared-state limitations, and restart/reconnect patterns.
+See [Using `SharedWorkerPonyfill`](https://github.com/okikio/sharedworker/blob/main/docs/ponyfill.md) for the native-versus-fallback behavior, Vite worker-discovery constraints, cleanup semantics, shared-state limitations, and restart/reconnect patterns.
 
 `@okikio/sharedworker` supports the same API surfaces as `SharedWorker` and `Worker`, except it adds some none spec. compliant properties and methods to the `SharedWorkerPolyfill` class, that enables devs to use `SharedWorker`'s on browsers that don't support it.
 
@@ -130,7 +130,7 @@ The package can fall back to a dedicated worker when the base `SharedWorker` con
 
 ## Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for the repository-native setup, validation, review, and release workflow.
+See [CONTRIBUTING.md](https://github.com/okikio/sharedworker/blob/main/CONTRIBUTING.md) for the repository-native setup, validation, review, and release workflow.
 
 > _**Note**: this project uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) standard for commits, so, please format your commits using the rules it sets out._
 
