@@ -28,7 +28,7 @@ When a change affects TypeScript declarations or public option shapes, also insp
 
 ### What CI validates
 
-`.github/workflows/validate.yml` runs for relevant pull requests and pushes to `main`. It:
+`.github/workflows/validate.yml` runs for every pull request targeting `main`. Pushes to `main` use path filtering so documentation-only merges do not repeat package validation unnecessarily. The workflow:
 
 1. installs the repository's pnpm version;
 2. uses the Node version in `.nvmrc`;
@@ -37,7 +37,7 @@ When a change affects TypeScript declarations or public option shapes, also insp
 5. runs the runtime regression tests;
 6. generates the API documentation.
 
-The workflow cancels superseded runs on the same ref so an older commit does not keep consuming CI time after a new commit is pushed.
+Running every pull request avoids an awkward failure mode where a required check can remain absent or stale on a docs-only head commit. The workflow also cancels superseded runs on the same ref so an older commit does not keep consuming CI time after a new commit is pushed.
 
 External deployment checks are separate from package validation. A deployment-provider failure does not by itself prove that the library build or tests failed. Inspect the failing provider when its preview matters, and use the `Validate` job as the repository-native build/test signal.
 
