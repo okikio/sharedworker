@@ -5,7 +5,11 @@ import { SharedWorkerSupported } from "./constants.ts";
 import { SharedWorkerPonyfill } from "./ponyfill.ts";
 
 /**
- * A polyfill class for `SharedWorker`, it accepts a URL/string as well as any other options the spec. allows for `SharedWorker`. It supports all the same methods and properties as the original, except it adds compatibility methods and properties for older browsers that don't support `SharedWorker`, so, it can switch to normal `Workers` instead. 
+ * Creates a native `SharedWorker` when available, or a dedicated `Worker` otherwise.
+ *
+ * The wrapper exposes the selected worker's messaging API. The dedicated-worker
+ * fallback has its own memory and lifetime; it does not share state between
+ * documents. Importing this class does not replace either global constructor.
  */
 export class SharedWorkerPolyfill extends SharedWorkerPonyfill {
   constructor(url: string | URL, opts?: WorkerOptions) {

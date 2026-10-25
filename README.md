@@ -5,10 +5,9 @@
 [NPM](https://www.npmjs.com/package/@okikio/sharedworker) <span style="padding-inline: 1rem">|</span> [Github](https://github.com/okikio/sharedworker#readme) <span style="padding-inline: 1rem">|</span> [Docs](https://sharedworker.okikio.dev) <span style="padding-inline: 1rem">|</span> [Licence](./LICENSE)  
 
 
-A small mostly spec. compliant polyfill/ponyfill for `SharedWorkers`, it acts as a drop in replacement for normal `Workers`, and supports a similar API surface that matches normal `Workers`.
+Use one messaging API with a native `SharedWorker` or a dedicated `Worker` fallback. A native shared worker can serve several documents. The fallback creates a separate worker for each document, so it does not share in-memory state between pages.
 
-> * [Ponyfills](https://github.com/sindresorhus/ponyfill) are seperate modules that are included to replicate the functionality of the original API, but are not required to be used.
-> * [Polyfills](https://developer.mozilla.org/en-US/docs/Glossary/Polyfill) update the original API on the global scope if it isn't supported in that specific environment or it's feature set is lacking compared to modern variations.
+`SharedWorkerPolyfill` selects the available native constructor. `SharedWorkerPonyfill` wraps a worker that your application creates. Both expose messaging methods directly on the wrapper. Importing these classes does not replace the browser's global constructors.
 
 > Check out the [blog post](https://blog.okikio.dev/sharedworker), created for it's launch. 
 
@@ -58,7 +57,7 @@ import SharedWorker from "https://esm.sh/@okikio/sharedworker";
 // or any number of other CDN's
 ```
 
-For vite and other bundlers you can also use the new `SharedWorkerPonyfill` like so ([#9](https://github.com/okikio/sharedworker/issues/9)), to address one-off issues with workers
+For Vite and other bundlers you can also use the `SharedWorkerPonyfill` like so ([#9](https://github.com/okikio/sharedworker/issues/9)), to address one-off issues with workers:
 
 ```ts
 import { SharedWorkerPonyfill, SharedWorkerSupported } from "@okikio/sharedworker";
@@ -72,19 +71,23 @@ if (SharedWorkerSupported) {
 }
 ```
 
-`@okikio/sharedworker` supports the same API surfaces as `SharedWorker` and `Worker`, except it adds some none spec. compliant properties and methods to the `SharedWorkerPolyfill` class, that enables devs to use `SharedWorker`'s on browsers that don't support it.
+See [Using `SharedWorkerPonyfill`](https://github.com/okikio/sharedworker/blob/main/docs/ponyfill.md) for the native-versus-fallback behavior, Vite worker-discovery constraints, cleanup semantics, shared-state limitations, and restart/reconnect patterns.
 
-In order to support browsers that don't natively support `SharedWorker`'s, the actual worker file needs to be tweaked slightly,
+## Write a worker that supports both constructors
+
+A native shared worker receives a `MessagePort` for each connection. A dedicated worker receives messages through its global scope. Pass either object to the same `start()` function:
 
 ```ts
 /* 
- * All variables and values outside the `start(...)` function are shared between all pages, this behavior can cause unexpected bugs if you're not careful
+ * A native shared worker shares this scope between connected documents.
+ * Each dedicated-worker fallback has its own copy of this scope.
  */
 const start = (port) => {
-    // All your normal Worker and SharedWorker stuff can be placed here and should just work, with no extra setup required 
+    // Set up messaging for this connection.
     
     /** 
-     * All variables and values inside the `start(...)` function are isolated to each page, and will be allocated seperately per page. 
+     * Local variables belong to this call to start(). A native shared worker
+     * calls start() for each connection; the fallback calls it once.
      */
     port.onmessage = ({ data }) => {
         console.log("Cool")
@@ -101,7 +104,7 @@ if (!("SharedWorkerGlobalScope" in self))
     start(self);
 ```
 
-> _**Note**: make sure to read the comments in the above code carefully to avoid unexpected bugs._
+Keep per-connection state inside `start()`. If several pages must share state when the fallback is used, provide a separate coordination mechanism. The wrapper does not add one.
 
 ## Showcase
 
@@ -116,44 +119,19 @@ The API of `@okikio/sharedworker` closely match the web `SharedWorker` API, exce
 
 > _**Note:** the normal functionality of the methods and properties that are normally available on `SharedWorker.prototype` will still be kept intact, in `@okikio/sharedworker`._ 
 
-In addition, the `terminate()` method was added to `@okikio/sharedworker`, this allows both the `close()` method (this is from `SharedWorker.prototype.port`) and the `terminate()` method to manually close workers. 
+The package adds `close()` and `terminate()` convenience methods. For a native `SharedWorker`, both close the current document's `MessagePort`; they do not forcibly terminate the shared worker for other connected documents. For the dedicated-worker fallback, they call `Worker.terminate()`.
 
 Check out the [API site](https://sharedworker.okikio.dev) for detailed API documentation.
 
 ## Browser Support
 
-| Chrome | Edge | Firefox | Safari | IE  |
-| ------ | ---- | ------- | ------ | --- |
-| 4+     | 12+  | 4+      | 4+     | 10+ |
+Browser support changes independently for `SharedWorker`, dedicated `Worker`, and individual worker features. Check the current [SharedWorker compatibility data on MDN](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker#browser_compatibility) and [Worker compatibility data](https://developer.mozilla.org/en-US/docs/Web/API/Worker#browser_compatibility) for the runtimes you target.
 
-Native support for `SharedWorker` is not supported at all on Safari and IE, as well as all mobile browsers (excluding Firefox For Android).
-
-> _**Note:** some features of `Workers` appeared at later versions of the spec., so, I suggest looking into the feature support table for [Workers](https://developer.mozilla.org/en-US/docs/Web/API/Worker#browser_compatibility) and [SharedWorkers](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker#browser_compatibility)._ 
-
+The package can fall back to a dedicated worker when the base `SharedWorker` constructor is absent, but that fallback does not reproduce native cross-document shared memory or shared-worker lifetime semantics. Design required coordination and persistence around the weaker fallback guarantee.
 
 ## Contributing
 
-I encourage you to use [pnpm](https://pnpm.io/configuring) to contribute to this repo, but you can also use [yarn](https://classic.yarnpkg.com/lang/en/) or [npm](https://npmjs.com) if you prefer.
-
-Install all necessary packages
-```bash
-npm install
-```
-
-Then run tests (WIP)
-```bash
-npm test
-```
-
-Build project 
-```bash
-npm run build
-```
-
-Preview API Docs
-```bash
-npm run typedoc && npm run preview
-```
+See [CONTRIBUTING.md](https://github.com/okikio/sharedworker/blob/main/CONTRIBUTING.md) for the repository-native setup, validation, review, and release workflow.
 
 > _**Note**: this project uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) standard for commits, so, please format your commits using the rules it sets out._
 
