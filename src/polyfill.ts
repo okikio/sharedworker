@@ -5,10 +5,39 @@ import { SharedWorkerSupported } from "./constants.ts";
 import { SharedWorkerPonyfill } from "./ponyfill.ts";
 
 /**
- * A polyfill class for `SharedWorker`, it accepts a URL/string as well as any other options the spec. allows for `SharedWorker`. It supports all the same methods and properties as the original, except it adds compatibility methods and properties for older browsers that don't support `SharedWorker`, so, it can switch to normal `Workers` instead. 
+ * Options for constructing a shared worker through {@link SharedWorkerPolyfill}.
+ *
+ * `extendedLifetime` requests that a supporting browser keep the native shared
+ * worker alive briefly after its last owner disappears. The browser controls
+ * the exact timeout. This package cannot emulate that lifetime when it falls
+ * back to a dedicated `Worker`; browsers that do not implement the option will
+ * ignore it.
+ *
+ * @see https://html.spec.whatwg.org/multipage/workers.html#dom-sharedworkeroptions-extendedlifetime
+ * @see https://github.com/okikio/sharedworker/blob/main/docs/lifecycle.md
+ */
+export interface SharedWorkerOptions extends WorkerOptions {
+  /**
+   * Requests extra lifetime after all documents using the native shared worker
+   * have unloaded. The default is `false`.
+   */
+  extendedLifetime?: boolean;
+}
+
+/**
+ * Creates a native `SharedWorker` when the runtime supports it and otherwise
+ * falls back to a dedicated `Worker`.
+ *
+ * Shared-worker-only behavior is forwarded to the native constructor. The
+ * fallback preserves this package's messaging API, but it cannot reproduce
+ * lifecycle semantics such as {@link SharedWorkerOptions.extendedLifetime}.
+ * Applications that depend on page restoration or restart-safe state should use
+ * the lifecycle workflow documented in the package guide.
+ *
+ * @see https://github.com/okikio/sharedworker/blob/main/docs/lifecycle.md
  */
 export class SharedWorkerPolyfill extends SharedWorkerPonyfill {
-  constructor(url: string | URL, opts?: WorkerOptions) {
+  constructor(url: string | URL, opts?: SharedWorkerOptions) {
     let worker: SharedWorker | Worker;
     if (SharedWorkerSupported) {
       worker = new SharedWorker(url, opts);
