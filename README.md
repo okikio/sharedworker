@@ -5,10 +5,9 @@
 [NPM](https://www.npmjs.com/package/@okikio/sharedworker) <span style="padding-inline: 1rem">|</span> [Github](https://github.com/okikio/sharedworker#readme) <span style="padding-inline: 1rem">|</span> [Docs](https://sharedworker.okikio.dev) <span style="padding-inline: 1rem">|</span> [Licence](./LICENSE)  
 
 
-A small mostly spec. compliant polyfill/ponyfill for `SharedWorkers`, it acts as a drop in replacement for normal `Workers`, and supports a similar API surface that matches normal `Workers`.
+Use one messaging API with a native `SharedWorker` or a dedicated `Worker` fallback. A native shared worker can serve several documents. The fallback creates a separate worker for each document, so it does not share in-memory state between pages.
 
-> * [Ponyfills](https://github.com/sindresorhus/ponyfill) are seperate modules that are included to replicate the functionality of the original API, but are not required to be used.
-> * [Polyfills](https://developer.mozilla.org/en-US/docs/Glossary/Polyfill) update the original API on the global scope if it isn't supported in that specific environment or it's feature set is lacking compared to modern variations.
+`SharedWorkerPolyfill` selects the available native constructor. `SharedWorkerPonyfill` wraps a worker that your application creates. Both expose messaging methods directly on the wrapper. Importing these classes does not replace the browser's global constructors.
 
 > Check out the [blog post](https://blog.okikio.dev/sharedworker), created for it's launch. 
 
@@ -94,19 +93,21 @@ Use `extendedLifetime` to reduce avoidable interruption, not as the correctness 
 
 When you use `SharedWorkerPonyfill`, the same exported `SharedWorkerOptions` type can describe the options passed to a native `SharedWorker` constructor before wrapping it.
 
-`@okikio/sharedworker` supports the same API surfaces as `SharedWorker` and `Worker`, except it adds some none spec. compliant properties and methods to the `SharedWorkerPolyfill` class, that enables devs to use `SharedWorker`'s on browsers that don't support it.
+## Write a worker that supports both constructors
 
-In order to support browsers that don't natively support `SharedWorker`'s, the actual worker file needs to be tweaked slightly,
+A native shared worker receives a `MessagePort` for each connection. A dedicated worker receives messages through its global scope. Pass either object to the same `start()` function:
 
 ```ts
 /* 
- * All variables and values outside the `start(...)` function are shared between all pages, this behavior can cause unexpected bugs if you're not careful
+ * A native shared worker shares this scope between connected documents.
+ * Each dedicated-worker fallback has its own copy of this scope.
  */
 const start = (port) => {
-    // All your normal Worker and SharedWorker stuff can be placed here and should just work, with no extra setup required 
+    // Set up messaging for this connection.
     
     /** 
-     * All variables and values inside the `start(...)` function are isolated to each page, and will be allocated seperately per page. 
+     * Local variables belong to this call to start(). A native shared worker
+     * calls start() for each connection; the fallback calls it once.
      */
     port.onmessage = ({ data }) => {
         console.log("Cool")
@@ -123,7 +124,7 @@ if (!("SharedWorkerGlobalScope" in self))
     start(self);
 ```
 
-> _**Note**: make sure to read the comments in the above code carefully to avoid unexpected bugs._
+Keep per-connection state inside `start()`. If several pages must share state when the fallback is used, provide a separate coordination mechanism. The wrapper does not add one.
 
 ## Showcase
 
